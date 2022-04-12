@@ -5,10 +5,9 @@ from flask.helpers import BadRequest
 from flask_login import current_user
 
 from labonneboite.conf import settings
-from labonneboite.common.models.office import Office
+from labonneboite_common.models.office import Office
 from labonneboite.web.auth.utils import login_url
 from . import utils
-
 
 logger = logging.getLogger('main')
 tilkeeBlueprint = Blueprint('tilkee', __name__)

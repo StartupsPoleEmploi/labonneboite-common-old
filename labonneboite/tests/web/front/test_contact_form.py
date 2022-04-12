@@ -1,6 +1,6 @@
 from unittest import mock
 
-from labonneboite.common import models
+from labonneboite_common import models
 from labonneboite.tests.test_base import DatabaseTest
 from labonneboite.web.contact_form import forms, mail
 
@@ -97,8 +97,7 @@ class UpdateCoordinatesTest(ContactFormBaseTest):
 
             # An entry should have been created in `UpdateCoordinatesRecruiterMessage`.
             msg = models.UpdateCoordinatesRecruiterMessage.query.filter(
-                    models.UpdateCoordinatesRecruiterMessage.siret == form_data['siret'],
-                ).one()
+                models.UpdateCoordinatesRecruiterMessage.siret == form_data['siret'],).one()
             self.assertEqual(msg.new_website, form_data['new_website'])
             self.assertEqual(msg.new_email, form_data['new_email'])
             self.assertEqual(msg.new_phone, form_data['new_phone'])
@@ -201,8 +200,7 @@ class UpdateJobsTest(ContactFormBaseTest):
 
             # An entry should have been created in `UpdateJobsRecruiterMessage`.
             msg = models.UpdateJobsRecruiterMessage.query.filter(
-                    models.UpdateJobsRecruiterMessage.siret == self.office.siret,
-                ).one()
+                models.UpdateJobsRecruiterMessage.siret == self.office.siret,).one()
 
             romes_to_add = set(romes_to_keep + extra_romes_to_add)
             self.assertCountEqual(romes_to_add, msg.romes_to_add.split(','))
@@ -266,8 +264,7 @@ class DeleteFormFormTest(ContactFormBaseTest):
 
             # An entry should have been created in `RemoveRecruiterMessage`.
             msg = models.RemoveRecruiterMessage.query.filter(
-                    models.RemoveRecruiterMessage.siret == form_data['siret'],
-                ).one()
+                models.RemoveRecruiterMessage.siret == form_data['siret'],).one()
             self.assertEqual(msg.remove_lba, 1)
             self.assertEqual(msg.remove_lbb, 0)
             self.assertEqual(msg.siret, form_data['siret'])
@@ -304,7 +301,6 @@ class OtherFormTest(ContactFormBaseTest):
             self.assertIn(f"E-mail : {form_data['email']}", mail_content)
             self.assertIn(f"Téléphone : {form_data['phone']}", mail_content)
 
-
     def test_update_coordinates_form(self):
         """
         Test `other_form` view.
@@ -324,8 +320,7 @@ class OtherFormTest(ContactFormBaseTest):
 
             # An entry should have been created in `OtherRecruiterMessage`.
             msg = models.OtherRecruiterMessage.query.filter(
-                    models.OtherRecruiterMessage.siret == form_data['siret'],
-                ).one()
+                models.OtherRecruiterMessage.siret == form_data['siret'],).one()
 
             self.assertEqual(msg.comment, form_data['comment'])
             self.assertEqual(msg.siret, form_data['siret'])

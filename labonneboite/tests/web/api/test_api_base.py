@@ -5,10 +5,10 @@ from operator import itemgetter
 
 from flask.wrappers import Response
 
-from labonneboite.common import es
-from labonneboite.common import mapping as mapping_util
-from labonneboite.common import scoring as scoring_util
-from labonneboite.common.models import Office
+from labonneboite_common import es
+from labonneboite_common import mapping as mapping_util
+from labonneboite_common import scoring as scoring_util
+from labonneboite_common.models import Office
 from labonneboite.conf import settings
 from labonneboite.tests.test_base import DatabaseTest
 from labonneboite.web.api import util

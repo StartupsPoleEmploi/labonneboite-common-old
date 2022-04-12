@@ -4,9 +4,9 @@ import unittest
 from flask import url_for as flask_url_for
 from flask import _request_ctx_stack
 
-from labonneboite.common.database import db_session, delete_db, engine, init_db
-from labonneboite.common import env
-from labonneboite.common import es
+from labonneboite_common.database import db_session, delete_db, engine, init_db
+from labonneboite_common import env
+from labonneboite_common import es
 from labonneboite.conf import settings
 from labonneboite.web.app import app
 

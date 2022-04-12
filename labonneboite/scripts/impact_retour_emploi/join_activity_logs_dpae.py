@@ -10,7 +10,7 @@ from labonneboite.importer import settings as importer_settings
 from labonneboite.importer.jobs.common import logger
 from labonneboite.scripts.impact_retour_emploi.settings import DEBUG
 from labonneboite.importer.models.computing import LogsActivityDPAEClean
-from labonneboite.common.env import get_current_env, ENV_DEVELOPMENT
+from labonneboite_common.env import get_current_env, ENV_DEVELOPMENT
 
 # Pandas utils functions
 # ----------------------
@@ -24,7 +24,7 @@ def get_date(row):
 class JoinActivityLogsDPAE:
 
     def __init__(self):
-        self.dpae_folder_path = importer_settings.INPUT_SOURCE_FOLDER+'/'
+        self.dpae_folder_path = importer_settings.INPUT_SOURCE_FOLDER + '/'
 
     def set_df_activity(self):
         self.df_activity = self.get_activity_logs()
@@ -62,7 +62,6 @@ class JoinActivityLogsDPAE:
         df_activity = pd.read_sql_query(query, engine)
         engine.close()
         return df_activity.astype(str)
-
 
     def set_most_recent_dpae_file(self):
         self.most_recent_dpae_file = self.get_most_recent_dpae_file()
@@ -141,18 +140,19 @@ class JoinActivityLogsDPAE:
 
         # We use the datas in csv using smaller chunks
         if DEBUG:
-            chunksize = 10 ** 2
+            chunksize = 10**2
         else:
             chunksize = 10000
 
         i = 0
-        column_names = ['kc_siret', 'dc_naf_id', 'dc_adresse', 'dc_codepostal', '_',
-                        'dn_tailleetablissement', 'dc_communenaissancepays', 'kd_dateembauche',
-                        'dc_typecontrat_id', 'dd_datefincdd', 'dc_romev3_1_id', 'dc_romev3_2_id',
-                        'kd_datecreation', 'dc_privepublic', 'dc_commune_id', 'dc_natureemploi_id',
-                        'dc_qualitesalarie_id', 'dn_dureetravailhebdo', 'dn_dureetravailmensuelle',
-                        'dn_dureetravailannuelle', 'nbrjourtravaille', 'iiann', 'dc_lblprioritede',
-                        'kn_trancheage', 'duree_pec', 'dc_ididentiteexterne', 'premiere_embauche']
+        column_names = [
+            'kc_siret', 'dc_naf_id', 'dc_adresse', 'dc_codepostal', '_', 'dn_tailleetablissement',
+            'dc_communenaissancepays', 'kd_dateembauche', 'dc_typecontrat_id', 'dd_datefincdd', 'dc_romev3_1_id',
+            'dc_romev3_2_id', 'kd_datecreation', 'dc_privepublic', 'dc_commune_id', 'dc_natureemploi_id',
+            'dc_qualitesalarie_id', 'dn_dureetravailhebdo', 'dn_dureetravailmensuelle', 'dn_dureetravailannuelle',
+            'nbrjourtravaille', 'iiann', 'dc_lblprioritede', 'kn_trancheage', 'duree_pec', 'dc_ididentiteexterne',
+            'premiere_embauche'
+        ]
 
         total_dpae_rows_used = 0
         logger.info(f"CHUNSIZE DF CSV DPAE: {chunksize}")
@@ -184,13 +184,11 @@ class JoinActivityLogsDPAE:
                 df_dpae = df_dpae.astype(str)
 
                 # We join the dpae and activity logs dataframe
-                df_dpae_act = pd.merge(
-                    df_dpae,
-                    df_activity,
-                    how='left',
-                    left_on=['dc_ididentiteexterne', 'kc_siret'],
-                    right_on=['idutilisateur_peconnect', 'siret']
-                )
+                df_dpae_act = pd.merge(df_dpae,
+                                       df_activity,
+                                       how='left',
+                                       left_on=['dc_ididentiteexterne', 'kc_siret'],
+                                       right_on=['idutilisateur_peconnect', 'siret'])
 
                 nb_rows = df_dpae_act.shape[0]
                 logger.info(f"Sample of merged activity/DPAE has : {nb_rows} rows")
@@ -216,8 +214,7 @@ class JoinActivityLogsDPAE:
                 logger.info(f" ==> Nb rows we keep in this sample : 0 rows")
                 logger.info(f" ==> Nb total rows that have been kept : 0 rows")
 
-
-            nb_total_rows_dpae_used = (i+1) * chunksize
+            nb_total_rows_dpae_used = (i + 1) * chunksize
             logger.info(f" ==> Nb total rows of DPAE that have been used : {nb_total_rows_dpae_used} rows")
             logger.info("\n-------------------------")
 

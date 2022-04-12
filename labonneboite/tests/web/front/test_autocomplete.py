@@ -8,15 +8,13 @@ from labonneboite.tests.test_base import AppTest
 class AutocompleteAddressLocations(AppTest):
 
     def test_autocomplete_le_lab(self):
-        coordinates = [
-            {
-                'latitude': 20,
-                'longitude': -21,
-                'label': 'Le dernier bar avant la fin du monde',
-            }
-        ]
+        coordinates = [{
+            'latitude': 20,
+            'longitude': -21,
+            'label': 'Le dernier bar avant la fin du monde',
+        }]
 
-        with mock.patch("labonneboite.common.geocoding.get_coordinates", return_value=coordinates):
+        with mock.patch("labonneboite_common.geocoding.get_coordinates", return_value=coordinates):
             response = self.app.get(self.url_for('search.autocomplete_locations', term='ledernierbar'))
 
         expected_result = coordinates[:]

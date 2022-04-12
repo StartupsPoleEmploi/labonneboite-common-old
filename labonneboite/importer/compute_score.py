@@ -38,19 +38,21 @@ from sklearn.metrics import mean_squared_error
 import sqlalchemy
 from sqlalchemy.pool import NullPool
 from sqlalchemy import func
-from labonneboite.common.util import timeit
+from labonneboite_common.util import timeit
 from labonneboite.importer import settings as importer_settings
 from labonneboite.importer.models.computing import DpaeStatistics, Hiring, RawOffice
-from labonneboite.common import scoring as scoring_util
-from labonneboite.common.database import get_db_string
-from labonneboite.common.env import get_current_env, ENV_DEVELOPMENT
+from labonneboite_common import scoring as scoring_util
+from labonneboite_common.database import get_db_string
+from labonneboite_common.env import get_current_env, ENV_DEVELOPMENT
 from .debug import listen
 from .jobs.common import logger
 
 listen()
 
+
 def get_engine():
     return sqlalchemy.create_engine(get_db_string(), poolclass=NullPool)
+
 
 # Output additional debug info about these sirets
 # To disable, set to an empty list []
@@ -78,8 +80,7 @@ def debug_df(df, description="no description"):
     Outputs useful information about dataframe
     """
     if len(DEBUG_SIRETS) >= 1:
-        logger.debug("dataframe debug info [%s] about sirets %s",
-                     description, DEBUG_SIRETS)
+        logger.debug("dataframe debug info [%s] about sirets %s", description, DEBUG_SIRETS)
         columns = list(df.columns)
         logger.debug("dataframe has %s rows and columns = %s", len(df), columns)
         if "siret" in columns:
@@ -92,7 +93,9 @@ def debug_df(df, description="no description"):
 
 def discarded_check(departement):
     # weird data distribution for these departements, discard safey
-    return int(departement) in [20, ]
+    return int(departement) in [
+        20,
+    ]
 
 
 def check_coefficient_of_variation(df_etab, departement, period_count_columns, prefix):
@@ -103,12 +106,9 @@ def check_coefficient_of_variation(df_etab, departement, period_count_columns, p
     logger.info("checking mean_between_existing_and_new_score: %s", coefficient_of_variation)
     if not discarded_check(departement):
         if not coefficient_of_variation < importer_settings.SCORE_COEFFICIENT_OF_VARIATION_MAX:
-            raise_with_message("[dpt%s] %s coefficient_of_variation too high: %s > %s" % (
-                departement,
-                prefix,
-                coefficient_of_variation,
-                importer_settings.SCORE_COEFFICIENT_OF_VARIATION_MAX
-            ))
+            raise_with_message(
+                "[dpt%s] %s coefficient_of_variation too high: %s > %s" %
+                (departement, prefix, coefficient_of_variation, importer_settings.SCORE_COEFFICIENT_OF_VARIATION_MAX))
 
 
 def check_mean_between_existing_and_new_score(departement, df):
@@ -124,18 +124,15 @@ def check_highly_scored_companies_evolution(departement, high_existing_scores, h
     logger.info("highly_scored_companies_evolution: %s", evolution)
     if not discarded_check(departement):
         if not evolution < importer_settings.HIGH_SCORE_COMPANIES_DIFF_MAX:
-            raise_with_message(
-                "evolution too high: %s > %s" % (evolution, importer_settings.HIGH_SCORE_COMPANIES_DIFF_MAX)
-            )
+            raise_with_message("evolution too high: %s > %s" %
+                               (evolution, importer_settings.HIGH_SCORE_COMPANIES_DIFF_MAX))
 
 
 def check_number_highly_scored_companies(departement, high_new_scores):
     if not discarded_check(departement):
         if not high_new_scores > importer_settings.HIGH_SCORE_COMPANIES_COUNT_MIN:
-            error_msg = "high_new_scores too low: %s < %s" % (
-                high_new_scores,
-                importer_settings.HIGH_SCORE_COMPANIES_COUNT_MIN
-            )
+            error_msg = "high_new_scores too low: %s < %s" % (high_new_scores,
+                                                              importer_settings.HIGH_SCORE_COMPANIES_COUNT_MIN)
             raise Exception(error_msg)
 
 
@@ -183,7 +180,8 @@ def go_back_last_day_of_the_month(date):
 @timeit
 def get_df_etab(departement):
     logger.debug("reading etablissements data (%s)", departement)
-    df_etab = pd.read_sql_query("""
+    df_etab = pd.read_sql_query(
+        """
         select * from %s where departement = %s and siret != ''
         """ % (RawOffice.__tablename__, departement), get_engine())
     debug_df(df_etab, "after loading from raw office table")
@@ -202,7 +200,8 @@ def get_df_etab(departement):
 @timeit
 def get_df_hiring(departement, prediction_beginning_date):
     logger.debug("reading hiring data...")
-    df_hiring = pd.read_sql_query("""
+    df_hiring = pd.read_sql_query(
+        """
         select
             siret,
             hiring_date,
@@ -254,8 +253,10 @@ def get_df_etab_with_hiring_monthly_aggregates(departement, prediction_beginning
     debug_df(df_dpae, "after group by")
     logger.debug("pivoting table dpae (%s)...", departement)
     # FIXME understand why `values="hiring_date"` is needed at all
-    df_dpae = pd.pivot_table(df_dpae, values="hiring_date", index="siret",
-        columns=["hiring_type", "hiring_date_year", "hiring_date_month"])
+    df_dpae = pd.pivot_table(df_dpae,
+                             values="hiring_date",
+                             index="siret",
+                             columns=["hiring_type", "hiring_date_year", "hiring_date_month"])
     debug_df(df_dpae, "after pivot")
     logger.debug("pivoting table (%s) ok!", departement)
 
@@ -311,8 +312,10 @@ def compute_prediction_beginning_date():
 
 
 def total_hired_period(period):
+
     def f(office):
         return office[period]
+
     return f
 
 
@@ -329,8 +332,12 @@ def months_between_dates(d1, d2):
     return delta
 
 
-def get_features_for_lag(df_etab, prefix, training_periods, data_gap_in_periods,
-        periods_back_in_time, debug_msg="Unnamed"):
+def get_features_for_lag(df_etab,
+                         prefix,
+                         training_periods,
+                         data_gap_in_periods,
+                         periods_back_in_time,
+                         debug_msg="Unnamed"):
     temporal_features = []
     for i in range(0, training_periods):  # [0, 1, ... training_periods - 1]
         index = data_gap_in_periods + (1 + i) + periods_back_in_time
@@ -369,8 +376,7 @@ def get_hirings_over_period_for_office(office, prediction_beginning_date, months
     return hirings_over_period
 
 
-def compute_hiring_aggregates(
-        df_etab, departement, prediction_beginning_date, periods, prefix, months_per_period):
+def compute_hiring_aggregates(df_etab, departement, prediction_beginning_date, periods, prefix, months_per_period):
     """
     Edits in place df_etab.
     Adds one column per period containing hiring total for this hiring_type.
@@ -384,7 +390,11 @@ def compute_hiring_aggregates(
         # pylint: disable=cell-var-from-loop
         df_etab[column] = df_etab.apply(
             lambda office: get_hirings_over_period_for_office(
-                office, prediction_beginning_date, months_per_period, minus=i, prefix=prefix,
+                office,
+                prediction_beginning_date,
+                months_per_period,
+                minus=i,
+                prefix=prefix,
             ),
             axis=1,
         )
@@ -397,8 +407,15 @@ def compute_hiring_aggregates(
 
 
 @timeit
-def train(df_etab, departement, prediction_beginning_date, last_historical_data_date,
-        months_per_period, training_periods, prefix_for_fields, score_field_name, is_lbb=True):
+def train(df_etab,
+          departement,
+          prediction_beginning_date,
+          last_historical_data_date,
+          months_per_period,
+          training_periods,
+          prefix_for_fields,
+          score_field_name,
+          is_lbb=True):
     """
     Edits in place df_etab by adding final score columns
     (e.g. score and score_regr for DPAE/LBB, or score_alternance and score_alternance_regr for LBA).
@@ -475,8 +492,8 @@ def train(df_etab, departement, prediction_beginning_date, last_historical_data_
     logger.debug("(%s %s) fitting done!", departement, prefix_for_fields)
 
     logger.debug("(%s %s) X_train_feature_names: %s", departement, prefix_for_fields, X_train_feature_names)
-    logger.debug("(%s %s) regression_coefficients (fitting done on X_train) : %s",
-        departement, prefix_for_fields, regr.coef_)
+    logger.debug("(%s %s) regression_coefficients (fitting done on X_train) : %s", departement, prefix_for_fields,
+                 regr.coef_)
 
     X_test, X_test_feature_names = get_features_for_lag(
         df_etab,
@@ -533,7 +550,8 @@ def train(df_etab, departement, prediction_beginning_date, last_historical_data_
         logger.info("(%s %s) regression_train RMSE : %s", departement, prefix_for_fields, rmse_train)
         logger.info("(%s %s) regression_test RMSE : %s", departement, prefix_for_fields, rmse_test)
         if rmse_test >= importer_settings.RMSE_MAX:
-            raise_with_message("is_lbb: %s, rmse_test too high : %s > %s" % (is_lbb, rmse_test, importer_settings.RMSE_MAX))
+            raise_with_message("is_lbb: %s, rmse_test too high : %s > %s" %
+                               (is_lbb, rmse_test, importer_settings.RMSE_MAX))
     except IndexError:
         logger.warning("not enough data to compute RMSE for %s", departement)
 
@@ -544,7 +562,7 @@ def train(df_etab, departement, prediction_beginning_date, last_historical_data_
 
     ranges = [0, 20, 40, 60, 80, 100]
     logger.info('(%s %s) score distribution : %s', departement, prefix_for_fields,
-        df_etab.groupby(pd.cut(df_etab.score, ranges))[score_field_name].agg('count'))
+                df_etab.groupby(pd.cut(df_etab.score, ranges))[score_field_name].agg('count'))
 
     compare_new_scores_to_old_ones(departement, df_etab)
 
@@ -571,9 +589,8 @@ def export_df_etab_to_db(df_etab, departement):
 def compare_new_scores_to_old_ones(departement, df_etab):
     logger.debug("fetching existing scores for %s", departement)
     df_existing_score = pd.read_sql_query(
-        "select siret, score as existing_score from %s where departement=%s" % (
-            importer_settings.SCORE_REDUCING_TARGET_TABLE, departement
-        ),
+        "select siret, score as existing_score from %s where departement=%s" %
+        (importer_settings.SCORE_REDUCING_TARGET_TABLE, departement),
         get_engine(),
     )
     debug_df(df_existing_score, "df_existing_score")
@@ -589,12 +606,8 @@ def compare_new_scores_to_old_ones(departement, df_etab):
         df_etab = pd.merge(df_etab, df_existing_score, on="siret", how="left")
         debug_df(df_etab, "after merge with df_existing_score and how=left")
         df_etab["diff_score"] = df_etab["score"] - df_etab["existing_score"]
-        logger.info(
-            "mean difference of scores: %s new score %s existing score %s",
-            df_etab[["diff_score"]].mean()[0],
-            df_etab[["score"]].mean()[0],
-            df_etab[["existing_score"]].mean()[0]
-        )
+        logger.info("mean difference of scores: %s new score %s existing score %s", df_etab[["diff_score"]].mean()[0],
+                    df_etab[["score"]].mean()[0], df_etab[["existing_score"]].mean()[0])
         # abort if the mean between the existing score and the new just computed score is too high
         check_mean_between_existing_and_new_score(departement, df_etab)
 
@@ -609,10 +622,10 @@ def compare_new_scores_to_old_ones(departement, df_etab):
 
 @timeit
 def run(
-        departement,
-        prediction_beginning_date=None,
-        return_df_etab_if_successful=False,
-    ):
+    departement,
+    prediction_beginning_date=None,
+    return_df_etab_if_successful=False,
+):
     """
     Returns True if computation successful and False otherwise.
     """
@@ -626,7 +639,7 @@ def run(
 
     if df_etab is None:
         logger.warning("no etab/hiring data found for departement %s", departement)
-        return False # failed computation (e.g. no data)
+        return False  # failed computation (e.g. no data)
 
     # LBB / DPAE.
 
@@ -634,7 +647,8 @@ def run(
         df_etab,
         departement,
         prediction_beginning_date=prediction_beginning_date,
-        last_historical_data_date=go_back_last_day_of_the_month(DpaeStatistics.get_last_historical_data_date(DpaeStatistics.DPAE)),
+        last_historical_data_date=go_back_last_day_of_the_month(
+            DpaeStatistics.get_last_historical_data_date(DpaeStatistics.DPAE)),
         months_per_period=6,
         training_periods=7,
         prefix_for_fields='dpae',
@@ -643,17 +657,16 @@ def run(
     logger.debug("DPAE/LBB training done for departement %s", departement)
 
     # LBA / Alternance.
-    train(
-        df_etab,
-        departement,
-        prediction_beginning_date=prediction_beginning_date,
-        last_historical_data_date=go_back_last_day_of_the_month(DpaeStatistics.get_last_historical_data_date(DpaeStatistics.APR)),
-        months_per_period=6,
-        training_periods=7,
-        prefix_for_fields='alt',
-        score_field_name='score_alternance',
-        is_lbb=False
-    )
+    train(df_etab,
+          departement,
+          prediction_beginning_date=prediction_beginning_date,
+          last_historical_data_date=go_back_last_day_of_the_month(
+              DpaeStatistics.get_last_historical_data_date(DpaeStatistics.APR)),
+          months_per_period=6,
+          training_periods=7,
+          prefix_for_fields='alt',
+          score_field_name='score_alternance',
+          is_lbb=False)
     logger.debug("Alternance/LBA training done for departement %s", departement)
 
     # Final data export.

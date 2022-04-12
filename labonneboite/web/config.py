@@ -31,13 +31,13 @@ class Config(object):
     # http://flask-admin.readthedocs.io/en/latest/advanced/#localization-with-flask-babelex
     BABEL_DEFAULT_LOCALE = 'fr'
 
-    SOCIAL_AUTH_USER_MODEL = 'labonneboite.common.models.auth.User'
+    SOCIAL_AUTH_USER_MODEL = 'labonneboite_common.models.auth.User'
     SOCIAL_AUTH_LOGIN_URL = '/'
     SOCIAL_AUTH_INACTIVE_USER_URL = '/'
 
     # Persist user authentication in cookie, and not just in session
-    SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = [settings.REMEMBER_ME_ARG_NAME] # used by social_core
-    REMEMBER_COOKIE_NAME = 'auth' # used by social_flask and flask_login
+    SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = [settings.REMEMBER_ME_ARG_NAME]  # used by social_core
+    REMEMBER_COOKIE_NAME = 'auth'  # used by social_flask and flask_login
     REMEMBER_COOKIE_DURATION = timedelta(days=365)
 
     # List of supported third party authentication providers.
@@ -54,12 +54,11 @@ class Config(object):
         'social_core.pipeline.user.get_username',
         # We use the default pipeline (social_core.pipeline.DEFAULT_AUTH_PIPELINE)
         # with just the additional find_user function.
-        'labonneboite.common.models.auth.find_user',
+        'labonneboite_common.models.auth.find_user',
         'social_core.pipeline.user.create_user',
         'social_core.pipeline.social_auth.associate_user',
         'social_core.pipeline.social_auth.load_extra_data',
-        'social_core.pipeline.user.user_details'
-    )
+        'social_core.pipeline.user.user_details')
 
     # PEAM backends config.
     SOCIAL_AUTH_VERIFY_SSL = settings.PEAM_VERIFY_SSL
@@ -80,5 +79,6 @@ class Config(object):
     # Define connection timeouts to make sure LBB is not going to timeout before PEAM
     SOCIAL_AUTH_PEAM_OPENIDCONNECT_URLOPEN_TIMEOUT = 8
     SOCIAL_AUTH_PEAM_OPENIDCONNECT_NO_PROMPT_URLOPEN_TIMEOUT = 5
+
 
 CONFIG = Config()

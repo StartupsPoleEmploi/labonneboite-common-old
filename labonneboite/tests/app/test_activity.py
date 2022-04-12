@@ -2,7 +2,7 @@ import json
 import unittest
 import unittest.mock
 
-from labonneboite.common import activity
+from labonneboite_common import activity
 
 
 class ActivityTests(unittest.TestCase):

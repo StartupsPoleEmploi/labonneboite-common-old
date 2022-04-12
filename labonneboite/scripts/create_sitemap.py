@@ -8,7 +8,7 @@ from flask import Flask, render_template
 from flask_script import Manager
 from slugify import slugify
 
-from labonneboite.common import geocoding
+from labonneboite_common import geocoding
 from labonneboite.conf import settings
 
 # max URLs in a sitemap
@@ -18,6 +18,7 @@ MAX_URLS = 50000
 app = Flask(__name__)
 
 manager = Manager(app)
+
 
 @manager.command
 def sitemap():
@@ -30,10 +31,8 @@ def sitemap():
     now_str = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
 
     cities = [city for city in geocoding.get_cities() if city['zipcode'].endswith('00')]
-    top_cities = [
-        (city['slug'], city['zipcode'])
-        for city in sorted(cities, key=operator.itemgetter('population'), reverse=True)[:94]
-    ]
+    top_cities = [(city['slug'], city['zipcode'])
+                  for city in sorted(cities, key=operator.itemgetter('population'), reverse=True)[:94]]
 
     rome_descriptions = list(settings.ROME_DESCRIPTIONS.values())
 
@@ -48,7 +47,8 @@ def sitemap():
     initialCount = len(pages)
     if initialCount > MAX_URLS:
         lineStart = '\n * SKIPPED: '
-        print('Warning: sitemap should have at most 50K URLs\nDrop these URLs, they will not be indexed in sitemap.xml', lineStart, lineStart.join(map(lambda p: p[0], pages[50000:])))
+        print('Warning: sitemap should have at most 50K URLs\nDrop these URLs, they will not be indexed in sitemap.xml',
+              lineStart, lineStart.join(map(lambda p: p[0], pages[50000:])))
         pages = pages[:MAX_URLS]
 
     # Write the sitemap to file
@@ -58,13 +58,15 @@ def sitemap():
         f.write(sitemap_xml)
 
     # Print summary
-    print("Generated sitemap.xml using %s pages. Dropped %s pages\nTotal: %s cities x %s rome_descriptions = %s pages" % (
-        len(pages),
-        initialCount - len(pages),
-        len(top_cities),
-        len(rome_descriptions),
-        initialCount,
-    ))
+    print("Generated sitemap.xml using %s pages. Dropped %s pages\nTotal: %s cities x %s rome_descriptions = %s pages" %
+          (
+              len(pages),
+              initialCount - len(pages),
+              len(top_cities),
+              len(rome_descriptions),
+              initialCount,
+          ))
+
 
 if __name__ == "__main__":
     manager.run()

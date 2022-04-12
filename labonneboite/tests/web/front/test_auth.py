@@ -2,8 +2,8 @@ import urllib.parse
 
 from social_flask_sqlalchemy.models import UserSocialAuth
 
-from labonneboite.common.database import db_session
-from labonneboite.common.models import get_user_social_auth, User
+from labonneboite_common.database import db_session
+from labonneboite_common.models import get_user_social_auth, User
 from labonneboite.tests.test_base import DatabaseTest
 from labonneboite.web.app import app
 from labonneboite.web.auth.backends.peam import PEAMOpenIdConnect

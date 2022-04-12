@@ -18,26 +18,26 @@ import traceback
 
 from labonneboite.importer import settings
 from labonneboite.importer import util as import_util
-from labonneboite.common.util import timeit
+from labonneboite_common.util import timeit
 from labonneboite.importer.util import parse_alternance_line, InvalidRowException, InvalidSiretException, InvalidZipCodeException, history_importer_job_decorator
 from labonneboite.importer.models.computing import DpaeStatistics, ImportTask, Hiring
 from labonneboite.importer.jobs.base import Job
 from labonneboite.importer.jobs.common import logger
-from labonneboite.common.database import db_session
+from labonneboite_common.database import db_session
 
 
 class ApprentissageExtractJob(Job):
     import_type = ImportTask.APPRENTISSAGE
     table_name = settings.HIRING_TABLE
 
-    def __init__(self, filename, contract_type = "APPRENTISSAGE"):
+    def __init__(self, filename, contract_type="APPRENTISSAGE"):
         self.input_filename = filename
         self.contract_name = contract_type
         if contract_type == 'APPRENTISSAGE':
             self.file_type = DpaeStatistics.APR
             self.contract_type = Hiring.CONTRACT_TYPE_APR
         elif contract_type == 'CONTRAT_PRO':
-            self.file_type = DpaeStatistics.PRO 
+            self.file_type = DpaeStatistics.PRO
             self.contract_type = Hiring.CONTRACT_TYPE_CP
         self.last_historical_data_date_in_file = None
         self.invalid_row_errors = 0
@@ -51,7 +51,7 @@ class ApprentissageExtractJob(Job):
         # this pattern matches the first date
         # e.g. '20200803ExtractApp'
         # will match 20200803
-        date_string = self.input_filename.split('/')[-1][0:8] 
+        date_string = self.input_filename.split('/')[-1][0:8]
         try:
             self.last_historical_data_date_in_file = datetime.strptime(date_string, "%Y%m%d")
         except ValueError:
@@ -88,8 +88,8 @@ class ApprentissageExtractJob(Job):
 
         with import_util.get_reader(self.input_filename) as myfile:
             con, cur = import_util.create_cursor()
-            header_line = myfile.readline().strip()   # FIXME detect column positions from header
-            
+            header_line = myfile.readline().strip()  # FIXME detect column positions from header
+
             if b"SIRET" not in header_line:
                 logger.debug(header_line)
                 raise Exception("wrong header line")
@@ -128,13 +128,13 @@ class ApprentissageExtractJob(Job):
                     logger.info("invalid zip code met at row: %i", count)
                     self.invalid_zipcode_errors += 1
                     continue
-                
-                # This part of code is useless : 
+
+                # This part of code is useless :
                 #   The data used has a lot of late contracts inputs
                 #   So we have to insert ALL the contracts from different dates
 
                 #  alternance_contract_should_be_imported = (
-                #      hiring_date > last_historical_data_date_in_db 
+                #      hiring_date > last_historical_data_date_in_db
                 #      and hiring_date <= self.last_historical_data_date_in_file
                 #)
 
@@ -144,14 +144,12 @@ class ApprentissageExtractJob(Job):
                         hiring_date,
                         self.contract_type,
                         departement,
-                        None, #contract_duration
-                        None, #iiann
-                        None, #tranche_age
-                        None, #handicap_label
+                        None,  #contract_duration
+                        None,  #iiann
+                        None,  #tranche_age
+                        None,  #handicap_label
                         None,  #duree_pec
-                        date_insertion
-
-                    )
+                        date_insertion)
                     statements.append(statement)
                     imported_alternance_contracts += 1
 
@@ -159,9 +157,12 @@ class ApprentissageExtractJob(Job):
                         imported_alternance_contracts_distribution[hiring_date.year] = {}
                     if hiring_date.month not in imported_alternance_contracts_distribution[hiring_date.year]:
                         imported_alternance_contracts_distribution[hiring_date.year][hiring_date.month] = {}
-                    if hiring_date.day not in imported_alternance_contracts_distribution[hiring_date.year][hiring_date.month]:
-                        imported_alternance_contracts_distribution[hiring_date.year][hiring_date.month][hiring_date.day] = 0
-                    imported_alternance_contracts_distribution[hiring_date.year][hiring_date.month][hiring_date.day] += 1
+                    if hiring_date.day not in imported_alternance_contracts_distribution[hiring_date.year][
+                            hiring_date.month]:
+                        imported_alternance_contracts_distribution[hiring_date.year][hiring_date.month][
+                            hiring_date.day] = 0
+                    imported_alternance_contracts_distribution[hiring_date.year][hiring_date.month][
+                        hiring_date.day] += 1
 
         # run remaining statements
         try:
@@ -178,28 +179,26 @@ class ApprentissageExtractJob(Job):
         logger.info(f"zipcode errors: {self.invalid_zipcode_errors}")
         logger.info(f"invalid_row errors: {self.invalid_row_errors}")
         logger.info(f"invalid siret errors: {self.invalid_siret_errors}")
-#        if self.zipcode_errors > settings.MAXIMUM_ZIPCODE_ERRORS:
-#            raise IOError('too many zipcode errors')
-#        if self.invalid_row_errors > settings.MAXIMUM_INVALID_ROWS:
-#            raise IOError('too many invalid_row errors')
+        #        if self.zipcode_errors > settings.MAXIMUM_ZIPCODE_ERRORS:
+        #            raise IOError('too many zipcode errors')
+        #        if self.invalid_row_errors > settings.MAXIMUM_INVALID_ROWS:
+        #            raise IOError('too many invalid_row errors')
 
         con.commit()
         cur.close()
         con.close()
 
         try:
-            statistics = DpaeStatistics(
-                last_import=datetime.now(),
-                most_recent_data_date=self.last_historical_data_date_in_file,
-                file_type=self.file_type
-            )
+            statistics = DpaeStatistics(last_import=datetime.now(),
+                                        most_recent_data_date=self.last_historical_data_date_in_file,
+                                        file_type=self.file_type)
             db_session.add(statistics)
             db_session.commit()
             logger.info("First way to insert DPAE statistics in DB : OK")
         except OperationalError:
             # For an obscure reason, the DpaeStatistics way to insert does not work on the bonaparte server
             # So we insert it directly via an SQL query
-            # This job has been broken for more than a year, only way to fix it : 
+            # This job has been broken for more than a year, only way to fix it :
             db_session.rollback()
             last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             most_recent_date = self.last_historical_data_date_in_file.strftime('%Y-%m-%d %H:%M:%S')
@@ -210,7 +209,6 @@ class ApprentissageExtractJob(Job):
             cur.close()
             con.close()
             logger.info("Second way to insert DPAE statistics in DB : OK")
-
 
         logger.info("finished importing dpae...")
         return something_new
@@ -224,14 +222,15 @@ def run_main():
     lba_app_filenames = import_util.detect_runnable_file("lba-app", bulk=True)
     for filename in lba_app_filenames:
         logger.info("PROCESSING %s" % filename)
-        task_app = ApprentissageExtractJob(filename, contract_type = 'APPRENTISSAGE')
+        task_app = ApprentissageExtractJob(filename, contract_type='APPRENTISSAGE')
         task_app.run()
 
     lba_pro_filenames = import_util.detect_runnable_file("lba-pro", bulk=True)
     for filename in lba_pro_filenames:
         logger.info("PROCESSING %s" % filename)
-        task_pro = ApprentissageExtractJob(filename, contract_type = 'CONTRAT_PRO')
+        task_pro = ApprentissageExtractJob(filename, contract_type='CONTRAT_PRO')
         task_pro.run()
+
 
 if __name__ == '__main__':
     run_main()

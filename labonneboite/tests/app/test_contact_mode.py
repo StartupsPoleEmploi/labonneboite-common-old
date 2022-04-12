@@ -1,8 +1,9 @@
 import unittest
 
-from labonneboite.common import util
-from labonneboite.common.load_data import load_contact_modes
-from labonneboite.common.models import Office
+from labonneboite_common import util
+from labonneboite_common.load_data import load_contact_modes
+from labonneboite_common.models import Office
+
 
 class ContactModeTest(unittest.TestCase):
 

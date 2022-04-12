@@ -16,16 +16,16 @@ import os
 
 from labonneboite.importer import settings
 from labonneboite.importer import util as import_util
-from labonneboite.common.util import timeit
+from labonneboite_common.util import timeit
 from labonneboite.importer.util import parse_dpae_line, InvalidRowException, history_importer_job_decorator
 from labonneboite.importer.models.computing import DpaeStatistics, ImportTask, Hiring
 from labonneboite.importer.jobs.base import Job
 from labonneboite.importer.jobs.common import logger
-from labonneboite.common.database import db_session
+from labonneboite_common.database import db_session
 from labonneboite.importer.models.errors import DoublonException
 
-
 DEFAULT_DATETIME_DPAE = datetime(2012, 1, 1, 0, 0)
+
 
 class DpaeExtractJob(Job):
     file_type = DpaeStatistics.DPAE
@@ -45,7 +45,7 @@ class DpaeExtractJob(Job):
         # this pattern matches the first date
         # e.g. 'lbb_xdpdpae_delta_201611102200.bz2'
         # will match 2018-09-12
-        date_pattern = r'.*_(\d\d\d\d\d\d\d\d)\d\d\d\d' #We keep only the date in the file name, ex: 20190910 = 10th september 2019
+        date_pattern = r'.*_(\d\d\d\d\d\d\d\d)\d\d\d\d'  #We keep only the date in the file name, ex: 20190910 = 10th september 2019
         date_match = re.match(date_pattern, self.input_filename)
         if date_match:
             date_part = date_match.groups()[0]
@@ -82,12 +82,12 @@ class DpaeExtractJob(Job):
                                                                           Hiring.CONTRACT_TYPE_CTT))).first()[0]
         if last_historical_data_date_in_db is None:
             last_historical_data_date_in_db = DEFAULT_DATETIME_DPAE
-        logger.info("will now extract all dpae with hiring_date between %s and %s",
-                    last_historical_data_date_in_db, self.last_historical_data_date_in_file)
+        logger.info("will now extract all dpae with hiring_date between %s and %s", last_historical_data_date_in_db,
+                    self.last_historical_data_date_in_file)
 
         with import_util.get_reader(self.input_filename) as myfile:
             con, cur = import_util.create_cursor()
-            header_line = myfile.readline().strip()   # FIXME detect column positions from header
+            header_line = myfile.readline().strip()  # FIXME detect column positions from header
             if b"siret" not in header_line:
                 logger.debug(header_line)
                 raise Exception("wrong header line")
@@ -121,33 +121,17 @@ class DpaeExtractJob(Job):
                     continue
 
                 dpae_should_be_imported = (
-                    hiring_date > last_historical_data_date_in_db 
+                    hiring_date > last_historical_data_date_in_db
                     and hiring_date <= self.last_historical_data_date_in_file
                     # For DPAE contracts we only keep all CDI, only long enough CDD (at least 31 days)
                     # and we ignore CTT.
-                    and (
-                        contract_type == Hiring.CONTRACT_TYPE_CDI
-                        or (
-                            contract_type == Hiring.CONTRACT_TYPE_CDD
-                            and contract_duration is not None
-                            and contract_duration > 31
-                        )
-                    )
-                )
+                    and (contract_type == Hiring.CONTRACT_TYPE_CDI or
+                         (contract_type == Hiring.CONTRACT_TYPE_CDD and contract_duration is not None
+                          and contract_duration > 31)))
 
                 if dpae_should_be_imported:
-                    statement = (
-                        siret,
-                        hiring_date,
-                        contract_type,
-                        departement,
-                        contract_duration,
-                        iiann,
-                        tranche_age,
-                        handicap_label,
-                        duree_pec,
-                        date_insertion
-                    )
+                    statement = (siret, hiring_date, contract_type, departement, contract_duration, iiann, tranche_age,
+                                 handicap_label, duree_pec, date_insertion)
                     statements.append(statement)
                     imported_dpae += 1
 
@@ -190,18 +174,16 @@ class DpaeExtractJob(Job):
         con.close()
 
         try:
-            statistics = DpaeStatistics(
-                last_import=datetime.now(),
-                most_recent_data_date=self.last_historical_data_date_in_file,
-                file_type=self.file_type
-            )
+            statistics = DpaeStatistics(last_import=datetime.now(),
+                                        most_recent_data_date=self.last_historical_data_date_in_file,
+                                        file_type=self.file_type)
             db_session.add(statistics)
             db_session.commit()
             logger.info("First way to insert DPAE statistics in DB : OK")
         except OperationalError:
             # For an obscure reason, the DpaeStatistics way to insert does not work on the bonaparte server
             # So we insert it directly via an SQL query
-            # This job has been broken for more than a year, only way to fix it : 
+            # This job has been broken for more than a year, only way to fix it :
             db_session.rollback()
             last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             most_recent_date = self.last_historical_data_date_in_file.strftime('%Y-%m-%d %H:%M:%S')

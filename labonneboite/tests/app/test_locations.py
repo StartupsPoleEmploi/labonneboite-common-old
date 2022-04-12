@@ -1,6 +1,6 @@
 import unittest
 
-from labonneboite.common import locations
+from labonneboite_common import locations
 
 
 class CityLocationTest(unittest.TestCase):

@@ -1,13 +1,11 @@
-
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import create_engine
 
-from labonneboite.common.database import Base, get_db_string
-import labonneboite.common.models
+from labonneboite_common.database import Base, get_db_string
+import labonneboite_common.models
 import labonneboite.importer.models
-
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -46,10 +44,7 @@ def run_migrations_online():
     connectable = create_engine(get_db_string())
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from labonneboite.common.database import db_session, init_db, delete_db, engine
+from labonneboite_common.database import db_session, init_db, delete_db, engine
 
 from labonneboite.importer.jobs.common import logger
 

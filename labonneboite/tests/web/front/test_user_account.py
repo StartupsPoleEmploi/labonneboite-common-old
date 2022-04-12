@@ -2,10 +2,10 @@ from unittest import mock
 
 from social_flask_sqlalchemy.models import UserSocialAuth
 
-from labonneboite.common.database import db_session
-from labonneboite.common.models import User
-from labonneboite.common.models import Office
-from labonneboite.common.models import UserFavoriteOffice
+from labonneboite_common.database import db_session
+from labonneboite_common.models import User
+from labonneboite_common.models import Office
+from labonneboite_common.models import UserFavoriteOffice
 from labonneboite.conf import settings
 from labonneboite.tests.test_base import DatabaseTest
 from labonneboite.web.auth.backends.peam import PEAMOpenIdConnect

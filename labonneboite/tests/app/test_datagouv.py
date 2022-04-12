@@ -3,7 +3,7 @@ import json
 from unittest import mock, TestCase
 
 from labonneboite.conf import settings
-from labonneboite.common.geocoding import datagouv
+from labonneboite_common.geocoding import datagouv
 
 autocomplete_cal_formatted = [{
     'department': '14',
@@ -25,6 +25,7 @@ search_lelab_formatted = [{
     'zipcode': '75019',
 }]
 
+
 def get_fixture(fixture, api_name='adresse.data.gouv.fr'):
     """
     Load a fixture from the fixtures/ folder and mock the request.get function.
@@ -32,6 +33,7 @@ def get_fixture(fixture, api_name='adresse.data.gouv.fr'):
     fixture_path = os.path.join(os.path.dirname(__file__), 'fixtures', api_name, fixture)
     fixture = json.load(open(fixture_path))
     return fixture
+
 
 class DatagouvTest(TestCase):
 
@@ -58,7 +60,6 @@ class DepartmentApiTest(TestCase):
 
         self.assertEqual(autocomplete_cal_formatted, departments)
 
-
     def test_autocomplete_empty(self):
         departments = datagouv.format_departments([])
 
@@ -72,12 +73,10 @@ class DepartmentApiTest(TestCase):
         self.assertEqual([], coordinates)
 
 
-
 class AdresseApiTest(TestCase):
 
     def setUp(self):
         datagouv.fetch_json.cache_clear()
-
 
     def test_get_coordinates(self):
         fixture = get_fixture('search-lelab.json')
@@ -86,7 +85,6 @@ class AdresseApiTest(TestCase):
         coordinates = datagouv.format_coordinates(features)
 
         self.assertEqual(search_lelab_formatted, coordinates)
-
 
     def test_city_homonyms_can_be_distinguished_by_zipcode(self):
         """
@@ -101,7 +99,6 @@ class AdresseApiTest(TestCase):
         for coordinate in coordinates:
             self.assertIn(coordinate['zipcode'], coordinate['label'])
 
-
     def test_400_error(self):
         fixture = mock.Mock(status_code=400, json=mock.Mock(side_effect=ValueError))
         with mock.patch.object(datagouv.requests, 'get', return_value=fixture):
@@ -114,7 +111,6 @@ class AdresseApiTest(TestCase):
             coordinates = datagouv.search('')
 
         self.assertEqual([], coordinates)
-
 
     def test_get_address(self):
         fixture = get_fixture('reverse-lelab.json')
@@ -129,7 +125,6 @@ class AdresseApiTest(TestCase):
             'label': '22 Allée Darius Milhaud 75019 Paris',
         }], address)
 
-
     def test_duplicate_features(self):
         fixture = get_fixture('search-metz.json')
         features = fixture['features']
@@ -137,7 +132,6 @@ class AdresseApiTest(TestCase):
         coordinates = datagouv.format_coordinates(features)
 
         self.assertNotEqual(coordinates[0]['label'], coordinates[1]['label'])
-
 
     def test_get_address_of_unknown_location(self):
         fixture = get_fixture('reverse-middleearth.json')

@@ -1,6 +1,6 @@
 # Authentication system (PE Connect / PEAM / SSO)
 
-User instances are stored in the `labonneboite.common.models.auth.User` model.
+User instances are stored in the `labonneboite_common.models.auth.User` model.
 
 To handle registration and login of users, we rely on the following tools:
 
@@ -136,7 +136,7 @@ def register_extensions(flask_app):
 
     # Create the social_flask_sqlalchemy models:
     from social_flask_sqlalchemy.models import PSABase
-    from labonneboite.common.database import engine
+    from labonneboite_common.database import engine
     from social_flask_sqlalchemy.models import UserSocialAuth, Nonce, Association, Code, Partial
     PSABase.metadata.create_all(engine)
 

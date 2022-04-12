@@ -19,10 +19,10 @@ from social_flask_sqlalchemy.models import init_social
 from werkzeug.contrib.fixers import ProxyFix
 
 from labonneboite.conf import settings
-from labonneboite.common import mailjet, pro
-from labonneboite.common.database import db_session, engine  # This is how we talk to the database.
-from labonneboite.common.env import ENV_DEVELOPMENT, get_current_env
-from labonneboite.common.models import Office, User
+from labonneboite_common import mailjet, pro
+from labonneboite_common.database import db_session, engine  # This is how we talk to the database.
+from labonneboite_common.env import ENV_DEVELOPMENT, get_current_env
+from labonneboite_common.models import Office, User
 from labonneboite.web.auth import utils as auth_utils
 from labonneboite.web.auth.backends.exceptions import AuthFailedMissingReturnValues
 from labonneboite.web.config import CONFIG
@@ -127,19 +127,19 @@ def register_admin(flask_app):
     # https://github.com/flask-admin/flask-admin/issues/1474
     admin.add_view(UserModelView(User, db_session, endpoint='users', name='Utilisateurs'))
 
-    from labonneboite.common.models import OfficeAdminAdd
+    from labonneboite_common.models import OfficeAdminAdd
     from labonneboite.web.admin.views.office_admin_add import OfficeAdminAddModelView
     admin.add_view(OfficeAdminAddModelView(OfficeAdminAdd, db_session, name='Ajouter une entreprise'))
 
-    from labonneboite.common.models import OfficeAdminRemove
+    from labonneboite_common.models import OfficeAdminRemove
     from labonneboite.web.admin.views.office_admin_remove import OfficeAdminRemoveModelView
     admin.add_view(OfficeAdminRemoveModelView(OfficeAdminRemove, db_session, name='Supprimer une entreprise'))
 
-    from labonneboite.common.models import OfficeAdminUpdate
+    from labonneboite_common.models import OfficeAdminUpdate
     from labonneboite.web.admin.views.office_admin_update import OfficeAdminUpdateModelView
     admin.add_view(OfficeAdminUpdateModelView(OfficeAdminUpdate, db_session, name='Modifier une entreprise'))
 
-    from labonneboite.common.models import OfficeAdminExtraGeoLocation
+    from labonneboite_common.models import OfficeAdminExtraGeoLocation
     from labonneboite.web.admin.views.office_admin_extra_geolocation import OfficeAdminExtraGeoLocationModelView
     admin.add_view(
         OfficeAdminExtraGeoLocationModelView(OfficeAdminExtraGeoLocation, db_session, name='Géolocalisations'))

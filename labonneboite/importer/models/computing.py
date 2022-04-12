@@ -5,9 +5,9 @@ from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 
 from labonneboite.importer import settings as importer_settings
-from labonneboite.common.database import Base
-from labonneboite.common.models.base import CRUDMixin
-from labonneboite.common.models import PrimitiveOfficeMixin, FinalOfficeMixin
+from labonneboite_common.database import Base
+from labonneboite_common.models.base import CRUDMixin
+from labonneboite_common.models import PrimitiveOfficeMixin, FinalOfficeMixin
 
 
 class Hiring(CRUDMixin, Base):
@@ -28,7 +28,7 @@ class Hiring(CRUDMixin, Base):
     __tablename__ = importer_settings.HIRING_TABLE
     __table_args__ = (
         # Improve performance of importer compute_scores parallel jobs
-        # by quickly fetching all hirings of any given departement. 
+        # by quickly fetching all hirings of any given departement.
         Index('_departement', 'departement'),
 
         # Make it fast to retrieve all hirings of a given siret.
@@ -60,6 +60,7 @@ class Hiring(CRUDMixin, Base):
     def __str__(self):
         return '%s %s' % (self.siret, self.hiring_date)
 
+
 class RawOffice(PrimitiveOfficeMixin, CRUDMixin, Base):
     """
     Initial large table storing all 10M offices and acting as the 'input' of the importer jobs.
@@ -69,9 +70,9 @@ class RawOffice(PrimitiveOfficeMixin, CRUDMixin, Base):
     __tablename__ = importer_settings.RAW_OFFICE_TABLE
     __table_args__ = (
         PrimaryKeyConstraint('siret'),
-        
+
         # Improve performance of importer compute_scores parallel jobs
-        # by quickly fetching all offices of any given departement.     
+        # by quickly fetching all offices of any given departement.
         Index('_departement', 'departement'),
     )
 
@@ -98,7 +99,7 @@ class ExportableOffice(FinalOfficeMixin, CRUDMixin, Base):
         # Improve performance of create_index.py parallel jobs
         # by quickly fetching all offices of any given departement.
         Index('_departement', 'departement'),
-        
+
         # Improve performance of create_index.py remove_scam_emails()
         # by quickly locating offices having a given scam email.
         Index('_email', 'email'),
@@ -163,11 +164,13 @@ class DpaeStatistics(CRUDMixin, Base):
     @classmethod
     def get_last_historical_data_date(cls, file_type):
         try:
-            return cls.query.order_by(cls.most_recent_data_date.desc()).filter_by(file_type=file_type).first().most_recent_data_date
+            return cls.query.order_by(
+                cls.most_recent_data_date.desc()).filter_by(file_type=file_type).first().most_recent_data_date
         except AttributeError:
             # if there was no import of dpae thus far, return the date for which
             # we don't want to import dpae before that date
             return importer_settings.OLDEST_POSSIBLE_DPAE_DATE
+
 
 # Tables needed for the "Impact sur le retour à l'emploi" project
 #-------------------------------------
@@ -180,6 +183,7 @@ class LogsIDPEConnect(CRUDMixin, Base):
     _id = Column('id', BigInteger, primary_key=True)
     idutilisateur_peconnect = Column(Text)
     dateheure = Column(DateTime, default=datetime.datetime.utcnow)
+
 
 class LogsActivity(CRUDMixin, Base):
     """
@@ -196,6 +200,7 @@ class LogsActivity(CRUDMixin, Base):
     utm_source = Column(Text)
     utm_campaign = Column(Text)
 
+
 class LogsActivityRecherche(CRUDMixin, Base):
     """
     Table which stores all queries made on the lbb website
@@ -208,6 +213,7 @@ class LogsActivityRecherche(CRUDMixin, Base):
     ville = Column(Text)
     code_postal = Column(Text)
     emploi = Column(Text)
+
 
 class LogsActivityDPAEClean(CRUDMixin, Base):
     """
@@ -233,11 +239,7 @@ class LogsActivityDPAEClean(CRUDMixin, Base):
 
 
 # FIXME : Replace with Enum if possible
-StatusJobExecution = {
-    'start' : 0,
-    'done' : 1,
-    'error' : 2
-}
+StatusJobExecution = {'start': 0, 'done': 1, 'error': 2}
 
 
 class HistoryImporterJobs(CRUDMixin, Base):
@@ -263,7 +265,7 @@ class HistoryImporterJobs(CRUDMixin, Base):
             return False
 
         # check if the most recent row in db for this job has start_date < 25 days
-        # 25 days totally arbitrary, we run importer each month, and with this function, 
+        # 25 days totally arbitrary, we run importer each month, and with this function,
         # we want it to check the job status for the current importer cycle, not the previous one
         now = datetime.datetime.now()
         most_recent_start_date = most_recent_job_history.start_date
@@ -272,6 +274,7 @@ class HistoryImporterJobs(CRUDMixin, Base):
             return False
 
         return most_recent_job_history.status == StatusJobExecution['done']
+
 
 ## Tables needed for performance indicators
 # -----------------------
@@ -289,6 +292,7 @@ class PerfImporterCycleInfos(CRUDMixin, Base):
     computed = Column(Boolean)
     on_google_sheets = Column(Boolean)
 
+
 class PerfPredictionAndEffectiveHirings(CRUDMixin, Base):
     """
     Used to compare effective (real) hirings in companies VS predicted hirings by importer algorithm (nb rows = NB_OFFICES * NB_IMPORTER_CYCLES)
@@ -296,7 +300,9 @@ class PerfPredictionAndEffectiveHirings(CRUDMixin, Base):
     __tablename__ = "perf_prediction_and_effective_hirings"
 
     _id = Column('id', BigInteger, primary_key=True)
-    importer_cycle_infos_id = Column(BigInteger, ForeignKey('perf_importer_cycle_infos.id', ondelete='SET NULL'), nullable=True)
+    importer_cycle_infos_id = Column(BigInteger,
+                                     ForeignKey('perf_importer_cycle_infos.id', ondelete='SET NULL'),
+                                     nullable=True)
     siret = Column(String(191))
     naf = Column('codenaf', String(8))
     city_code = Column('codecommune', String(191))
@@ -304,14 +310,21 @@ class PerfPredictionAndEffectiveHirings(CRUDMixin, Base):
     departement = Column(String(8))
     company_name = Column('raisonsociale', String(191))
     office_name = Column('enseigne', String(191), default='')
-    lbb_nb_predicted_hirings_score = Column(Integer) #Score associé au Nombre de recrutement prédits pour LBB (en utilisant les DPAE)
-    lba_nb_predicted_hirings_score = Column(Integer) #Score associé au Nombre de recrutements prédits pour LBA (en utilisant APR et CP)
-    lbb_nb_predicted_hirings = Column(Integer) #Nombre de recrutement prédits pour LBB (en utilisant les DPAE)
-    lba_nb_predicted_hirings = Column(Integer) #Nombre de recrutements prédits pour LBA (en utilisant APR et CP)
-    lbb_nb_effective_hirings = Column(Integer) #Nombre de recrutement effectifs pour LBB (en utilisant les DPAE)
-    lba_nb_effective_hirings = Column(Integer) #Nombre de recrutements effectifs pour LBA (en utilisant APR et CP)
-    is_a_bonne_boite = Column(Boolean) #Affiché ou non sur LBB (Dépasse pour au moins un rome le seuil) port_date = Column(DateTime, default=None)
-    is_a_bonne_alternance = Column(Boolean) #Affiché ou non sur LBA (Dépasse pour au moins un rome le seuil) port_date = Column(DateTime, default=None)
+    lbb_nb_predicted_hirings_score = Column(
+        Integer)  #Score associé au Nombre de recrutement prédits pour LBB (en utilisant les DPAE)
+    lba_nb_predicted_hirings_score = Column(
+        Integer)  #Score associé au Nombre de recrutements prédits pour LBA (en utilisant APR et CP)
+    lbb_nb_predicted_hirings = Column(Integer)  #Nombre de recrutement prédits pour LBB (en utilisant les DPAE)
+    lba_nb_predicted_hirings = Column(Integer)  #Nombre de recrutements prédits pour LBA (en utilisant APR et CP)
+    lbb_nb_effective_hirings = Column(Integer)  #Nombre de recrutement effectifs pour LBB (en utilisant les DPAE)
+    lba_nb_effective_hirings = Column(Integer)  #Nombre de recrutements effectifs pour LBA (en utilisant APR et CP)
+    is_a_bonne_boite = Column(
+        Boolean
+    )  #Affiché ou non sur LBB (Dépasse pour au moins un rome le seuil) port_date = Column(DateTime, default=None)
+    is_a_bonne_alternance = Column(
+        Boolean
+    )  #Affiché ou non sur LBA (Dépasse pour au moins un rome le seuil) port_date = Column(DateTime, default=None)
+
 
 class PerfDivisionPerRome(CRUDMixin, Base):
     """
@@ -320,7 +333,9 @@ class PerfDivisionPerRome(CRUDMixin, Base):
     __tablename__ = "perf_division_per_rome"
 
     _id = Column('id', BigInteger, primary_key=True)
-    importer_cycle_infos_id = Column(BigInteger, ForeignKey('perf_importer_cycle_infos.id', ondelete='SET NULL'), nullable=True)
+    importer_cycle_infos_id = Column(BigInteger,
+                                     ForeignKey('perf_importer_cycle_infos.id', ondelete='SET NULL'),
+                                     nullable=True)
     naf = Column('codenaf', String(8), nullable=False)
     rome = Column('coderome', String(8), nullable=False)
     threshold_lbb = Column(Float)

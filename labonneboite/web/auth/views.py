@@ -7,9 +7,9 @@ from flask import Blueprint, flash, redirect, session, url_for, render_template,
 from flask_login import current_user, logout_user
 from social_flask_sqlalchemy.models import UserSocialAuth
 
-from labonneboite.common import activity
-from labonneboite.common.database import db_session
-from labonneboite.common.models import get_user_social_auth
+from labonneboite_common import activity
+from labonneboite_common.database import db_session
+from labonneboite_common.models import get_user_social_auth
 from labonneboite.conf import settings
 from labonneboite.web.auth.backends.peam import PEAMOpenIdConnect
 from labonneboite.web.auth.backends.peam_recruiter import SessionKeys
@@ -17,10 +17,10 @@ from labonneboite.web.auth.backends.peam_recruiter import get_token_data, get_re
 from labonneboite.web.search.forms import CompanySearchForm
 from labonneboite.web.utils import fix_csrf_session
 
-
 authBlueprint = Blueprint('auth', __name__)
 
 logger = logging.getLogger('main')
+
 
 def random_string(length=10):
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
@@ -38,8 +38,7 @@ def logout(user_social_auth=None):
     if not current_user.is_authenticated:
         return redirect(url_for('root.home'))
 
-    logged_with_peam = session.get(
-        'social_auth_last_login_backend') == PEAMOpenIdConnect.name
+    logged_with_peam = session.get('social_auth_last_login_backend') == PEAMOpenIdConnect.name
     if logged_with_peam:
         if not user_social_auth:
             user_social_auth = get_user_social_auth(current_user.id)
@@ -68,8 +67,7 @@ def logout(user_social_auth=None):
             'id_token_hint': id_token,
             'redirect_uri': url_for('auth.logout_from_peam_callback', _external=True),
         }
-        peam_logout_url = '%s/compte/deconnexion?%s' % (
-            settings.PEAM_AUTH_BASE_URL, urlencode(params))
+        peam_logout_url = '%s/compte/deconnexion?%s' % (settings.PEAM_AUTH_BASE_URL, urlencode(params))
         # After this redirect, the user will be redirected to the LBB website `logout_from_peam_callback` route.
         return redirect(peam_logout_url)
 
@@ -122,7 +120,8 @@ def peam_recruiter_connect():
     session['STATE'] = state
     session['NONCE'] = nonce
 
-    scope = "application_{} api_peconnect-entreprisev1 openid profile email habilitation".format(settings.PEAM_CLIENT_ID)
+    scope = "application_{} api_peconnect-entreprisev1 openid profile email habilitation".format(
+        settings.PEAM_CLIENT_ID)
 
     url = settings.PEAM_AUTH_RECRUITER_BASE_URL + "connexion/oauth2/authorize?" + urlencode({
         'realm': '/employeur',

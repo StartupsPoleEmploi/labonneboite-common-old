@@ -5,12 +5,11 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import and_
 
-from labonneboite.common import scoring as scoring_util
-from labonneboite.common.models import Office
+from labonneboite_common import scoring as scoring_util
+from labonneboite_common.models import Office
 from labonneboite.conf import settings
 from labonneboite.importer.models.computing import Hiring
 from .test_base import DatabaseTest
-
 
 FIFTEEN_MONTHS = 15 * 30
 
@@ -23,8 +22,7 @@ class ScoringTest(DatabaseTest):
         departements = ["10", "20", "30", "40", "50", "57", "60", "70", "75", "80", "90", "92"]
 
         for departement in departements:
-            offices = Office.query.filter(
-                and_(Office.departement == departement, Office.score > 50)).limit(1000)
+            offices = Office.query.filter(and_(Office.departement == departement, Office.score > 50)).limit(1000)
 
             last_year = datetime.now() - timedelta(days=FIFTEEN_MONTHS)
 
@@ -39,13 +37,11 @@ class ScoringTest(DatabaseTest):
                         print(dpae)
                     raise
 
-
     def test_converting_hirings_into_scores_back_and_forth(self):
         for score in range(101):  # [0, 1, 2, 3.. 100]
             self.assertEqual(
                 score,
-                scoring_util.get_score_from_hirings(scoring_util.get_hirings_from_score(score), skip_bucketing=True)
-            )
+                scoring_util.get_score_from_hirings(scoring_util.get_hirings_from_score(score), skip_bucketing=True))
 
     # ############### WARNING about matching scores vs hirings ################
     # Methods scoring_util.get_hirings_from_score

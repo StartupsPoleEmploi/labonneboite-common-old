@@ -7,15 +7,15 @@ from flask_login import current_user
 from sentry_sdk import start_transaction
 from slugify import slugify
 
-from labonneboite.common import activity, autocomplete, geocoding
-from labonneboite.common import mapping as mapping_util
-from labonneboite.common import pagination, pro, sorting
-from labonneboite.common.load_data import load_related_rome, load_related_rome_areas
-from labonneboite.common.locations import CityLocation, Location, NamedLocation
-from labonneboite.common.models import UserFavoriteOffice
-from labonneboite.common.refresh_peam_token import attempt_to_refresh_peam_token
-from labonneboite.common.search import AudienceFilter, HiddenMarketFetcher
-from labonneboite.common.util import get_enum_from_value
+from labonneboite_common import activity, autocomplete, geocoding
+from labonneboite_common import mapping as mapping_util
+from labonneboite_common import pagination, pro, sorting
+from labonneboite_common.load_data import load_related_rome, load_related_rome_areas
+from labonneboite_common.locations import CityLocation, Location, NamedLocation
+from labonneboite_common.models import UserFavoriteOffice
+from labonneboite_common.refresh_peam_token import attempt_to_refresh_peam_token
+from labonneboite_common.search import AudienceFilter, HiddenMarketFetcher
+from labonneboite_common.util import get_enum_from_value
 from labonneboite.conf import settings
 from labonneboite.web.search.forms import make_company_search_form
 from labonneboite.web.utils import fix_csrf_session
@@ -24,6 +24,7 @@ searchBlueprint = Blueprint('search', __name__)
 
 RELATED_ROMES = load_related_rome() if settings.ENABLE_RELATED_ROMES else []
 RELATED_ROMES_AREAS = load_related_rome_areas() if settings.ENABLE_RELATED_ROMES else []
+
 
 @searchBlueprint.route('/suggest_job_labels')
 def suggest_job_labels():
@@ -242,17 +243,20 @@ def results(city, zipcode, occupation):
     redirect_url = url_for('search.entreprises', **params)
     return redirect(redirect_url)
 
+
 # def add_nafs(rome_object):
 #     nafs = mapping_util.nafs_for_rome(rome_object.get('rome'))
 #     if(nafs):
 #         rome_object['nafs'] = nafs
 #     return rome_object
 
+
 def add_descriptions(rome_object):
     description = settings.ROME_DESCRIPTIONS[rome_object.get('rome')]
-    if(description):
+    if (description):
         rome_object['description'] = description
     return rome_object
+
 
 @searchBlueprint.route('/entreprises')
 def entreprises():
@@ -288,7 +292,7 @@ def entreprises():
         hide_suggestions = False
         if (named_location):
             with start_transaction(op='related_romes_get', name='rome_' + rome):
-                related_area = RELATED_ROMES_AREAS.get(named_location.city_code,None)
+                related_area = RELATED_ROMES_AREAS.get(named_location.city_code, None)
                 if (related_area):
                     # Hide suggestions for places which may have suggestions
                     hide_suggestions = True
@@ -403,10 +407,8 @@ def entreprises():
     form.naf.choices = [('', 'Tous les secteurs')] + sorted(naf_codes_with_descriptions, key=lambda t: t[1])
     form.validate()
 
-    canonical_url = get_canonical_results_url(
-        named_location.zipcode, named_location.city,
-        occupation
-    ) if named_location else ''
+    canonical_url = get_canonical_results_url(named_location.zipcode, named_location.city,
+                                              occupation) if named_location else ''
 
     context = {
         'alternative_distances': alternative_distances,
@@ -436,7 +438,8 @@ def entreprises():
         'tile_server_url': settings.TILE_SERVER_URL,
         'travel_mode': fetcher.travel_mode,
         'user_favs_as_sirets': UserFavoriteOffice.user_favs_as_sirets(current_user),
-        'show_mobiville': pagination_manager.company_count <= settings.MOBIVILLE_MAX_COMPANY_COUNT and rome in settings.MOBIVILLE_ROMES,
+        'show_mobiville': pagination_manager.company_count <= settings.MOBIVILLE_MAX_COMPANY_COUNT and
+                          rome in settings.MOBIVILLE_ROMES,
     }
 
     activity_log_properties['distance'] = fetcher.distance
@@ -471,7 +474,8 @@ def get_canonical_results_url(zipcode, city, occupation):
     ])
 
 
-def get_location(request_args: Dict[str, Union[str, int]]) -> Tuple[Optional[Location], Optional[NamedLocation], Optional[str]]:
+def get_location(
+        request_args: Dict[str, Union[str, int]]) -> Tuple[Optional[Location], Optional[NamedLocation], Optional[str]]:
     """
     Parse request parameters to extract a desired location and location names.
 
@@ -538,6 +542,7 @@ def get_location(request_args: Dict[str, Union[str, int]]) -> Tuple[Optional[Loc
 
     return location, named_location, departments
 
+
 @searchBlueprint.route('/entreprises/commune/<commune_id>/rome/<rome_id>')
 def results_by_commune_and_rome(commune_id, rome_id):
     """
@@ -570,6 +575,7 @@ def results_by_commune_and_rome(commune_id, rome_id):
     # roughly equivalent to the result of an API call - see Trello #971.
     return redirect(url)
 
+
 @searchBlueprint.route('/entreprises/department/<department_code>/rome/<rome_id>')
 def results_by_departments_and_rome(department_code, rome_id):
     """
@@ -585,6 +591,7 @@ def results_by_departments_and_rome(department_code, rome_id):
         abort(400, 'Department or rome not found')
     return redirect(url)
 
+
 def get_url_for_rome(rome_id, department_code):
     try:
         rome_description = settings.ROME_DESCRIPTIONS[rome_id.upper()]
@@ -596,8 +603,8 @@ def get_url_for_rome(rome_id, department_code):
         departmentData = geocoding.datagouv.get_department_by_code(department_code)
         if departmentData:
             return url_for('search.entreprises',
-                departments=department_code,
-                j=rome_id,
-                l=departmentData.get('label'),
-                occupation=slugified_rome_description)
+                           departments=department_code,
+                           j=rome_id,
+                           l=departmentData.get('label'),
+                           occupation=slugified_rome_description)
     return None

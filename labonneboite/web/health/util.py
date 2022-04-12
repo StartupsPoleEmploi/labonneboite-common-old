@@ -1,6 +1,6 @@
 import logging
-from labonneboite.common.database import db_session
-from labonneboite.common.es import Elasticsearch
+from labonneboite_common.database import db_session
+from labonneboite_common.es import Elasticsearch
 
 logger = logging.getLogger('main')
 
@@ -32,4 +32,3 @@ def is_uwsgi_alive():
     it obviously means uwsgi is up, so there is nothing to test.
     """
     return True
-

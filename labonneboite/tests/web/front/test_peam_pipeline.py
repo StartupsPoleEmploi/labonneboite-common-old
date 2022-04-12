@@ -2,7 +2,7 @@ from social_flask.utils import load_strategy
 
 from labonneboite.web.auth.backends import peam
 from labonneboite.tests.test_base import DatabaseTest
-from labonneboite.common.models import User
+from labonneboite_common.models import User
 
 
 class AuthPipelineTest(DatabaseTest):
@@ -30,15 +30,14 @@ class AuthPipelineTest(DatabaseTest):
             strategy = load_strategy()
             backend = BackendClass(strategy=strategy)
             pipeline = strategy.get_pipeline(backend)
-            result = backend.run_pipeline(
-                pipeline, pipeline_index=0,
-                backend=backend,
-                is_new=False,
-                response=self.response,
-                storage=strategy.storage,
-                strategy=strategy,
-                user=None
-            )
+            result = backend.run_pipeline(pipeline,
+                                          pipeline_index=0,
+                                          backend=backend,
+                                          is_new=False,
+                                          response=self.response,
+                                          storage=strategy.storage,
+                                          strategy=strategy,
+                                          user=None)
             return result
 
     def test_run_pipeline_with_PEAMOpenIdConnect(self):

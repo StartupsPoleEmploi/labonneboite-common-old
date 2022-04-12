@@ -1,7 +1,7 @@
 import json
 import os
 from unittest import mock, TestCase
-from labonneboite.common import geocoding
+from labonneboite_common import geocoding
 
 
 class GeocodingTest(TestCase):
@@ -59,4 +59,3 @@ class GeocodingTest(TestCase):
         saint_julien_les_metz = geocoding.get_city_by_zipcode("57070", "saint-julien-les-metz")
         self.assertEqual(vantoux['commune_id'], '57693')
         self.assertEqual(saint_julien_les_metz['commune_id'], '57616')
-

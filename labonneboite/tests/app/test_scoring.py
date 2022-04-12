@@ -1,6 +1,6 @@
 import unittest
 
-from labonneboite.common import scoring
+from labonneboite_common import scoring
 
 
 class ScoringTest(unittest.TestCase):

@@ -3,23 +3,23 @@ from typing import Sequence
 
 from flask import abort, Blueprint, current_app, jsonify, request, url_for
 
-from labonneboite.common import activity
-from labonneboite.common import autocomplete
-from labonneboite.common import geocoding
-from labonneboite.common import offers
-from labonneboite.common import sorting
-from labonneboite.common import mapping as mapping_util
-from labonneboite.common import pagination
-from labonneboite.common import hiring_type_util
-from labonneboite.common.locations import Location
-from labonneboite.common.load_data import ROME_CODES
-from labonneboite.common.models import Office, OfficeResult
-from labonneboite.common.fetcher import InvalidFetcherArgument
-from labonneboite.common.constants import Scope
-from labonneboite.common.util import get_enum_from_value
+from labonneboite_common import activity
+from labonneboite_common import autocomplete
+from labonneboite_common import geocoding
+from labonneboite_common import offers
+from labonneboite_common import sorting
+from labonneboite_common import mapping as mapping_util
+from labonneboite_common import pagination
+from labonneboite_common import hiring_type_util
+from labonneboite_common.locations import Location
+from labonneboite_common.load_data import ROME_CODES
+from labonneboite_common.models import Office, OfficeResult
+from labonneboite_common.fetcher import InvalidFetcherArgument
+from labonneboite_common.constants import Scope
+from labonneboite_common.util import get_enum_from_value
 from labonneboite.web.api import util as api_util
 from labonneboite.conf import settings
-from labonneboite.common.search import HiddenMarketFetcher, AudienceFilter, FILTERS, DISTANCE_FILTER_MAX
+from labonneboite_common.search import HiddenMarketFetcher, AudienceFilter, FILTERS, DISTANCE_FILTER_MAX
 from flask.ext.cors import cross_origin
 
 apiBlueprint = Blueprint('api', __name__)

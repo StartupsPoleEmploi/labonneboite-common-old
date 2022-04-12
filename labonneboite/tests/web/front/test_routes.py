@@ -8,25 +8,20 @@ from flask import url_for
 
 from labonneboite.conf import settings
 from labonneboite.tests.test_base import AppTest, DatabaseTest
-from labonneboite.web.search.views import get_canonical_results_url, get_location, get_url_for_rome 
+from labonneboite.web.search.views import get_canonical_results_url, get_location, get_url_for_rome
 
 
 class SearchEntreprisesTest(DatabaseTest):
 
     def setUp(self):
         super(SearchEntreprisesTest, self).setUp()
-        self.gotham_city = {
-            'label': 'Gotham City 19100',
-            'zipcode': '19100',
-            'city_code': '19111',
-            'city': 'Gotham'
-        }
+        self.gotham_city = {'label': 'Gotham City 19100', 'zipcode': '19100', 'city_code': '19111', 'city': 'Gotham'}
 
     def test_search_by_coordinates(self):
         url = self.url_for('search.entreprises', lat=42, lon=6, occupation='strategie-commerciale')
 
         addresses = [self.gotham_city]
-        with mock.patch('labonneboite.common.geocoding.get_address', return_value=addresses) as get_address:
+        with mock.patch('labonneboite_common.geocoding.get_address', return_value=addresses) as get_address:
             response = self.app.get(url)
 
             get_address.assert_called_once_with(42, 6, limit=1)
@@ -36,7 +31,7 @@ class SearchEntreprisesTest(DatabaseTest):
 
     def test_search_by_coordinates_with_no_associated_address(self):
         url = self.url_for('search.entreprises', lat=42, lon=6, occupation='strategie-commerciale')
-        with mock.patch('labonneboite.common.geocoding.get_address', return_value=[]) as get_address:
+        with mock.patch('labonneboite_common.geocoding.get_address', return_value=[]) as get_address:
             response = self.app.get(url)
 
             get_address.assert_called_once_with(42, 6, limit=1)
@@ -45,17 +40,20 @@ class SearchEntreprisesTest(DatabaseTest):
     def test_search_by_invalid_coordinates(self):
         url = self.url_for('search.entreprises', lat=91, lon=181, occupation='strategie-commerciale')
         addresses = [self.gotham_city]
-        with mock.patch('labonneboite.common.geocoding.get_address', return_value=addresses):
+        with mock.patch('labonneboite_common.geocoding.get_address', return_value=addresses):
             response = self.app.get(url)
         self.assertEqual(200, response.status_code)
 
     def test_search_by_non_float_coordinates(self):
-        self.es.index(index=settings.ES_INDEX, doc_type='ogr', id=1, body={
-            'ogr_code': '10974',
-            'ogr_description': 'Animateur commercial / Animatrice commerciale',
-            'rome_code': 'D1501',
-            'rome_description': 'Animation de vente'
-        })
+        self.es.index(index=settings.ES_INDEX,
+                      doc_type='ogr',
+                      id=1,
+                      body={
+                          'ogr_code': '10974',
+                          'ogr_description': 'Animateur commercial / Animatrice commerciale',
+                          'rome_code': 'D1501',
+                          'rome_description': 'Animation de vente'
+                      })
         self.es.indices.flush(index=settings.ES_INDEX)
 
         url = self.url_for('search.entreprises', lat='undefined', lon='undefined', j='D1501')
@@ -69,9 +67,8 @@ class SearchEntreprisesTest(DatabaseTest):
         response = self.app.get(url)
 
         self.assertEqual(
-            settings.PREFERRED_URL_SCHEME + '://' + settings.SERVER_NAME + '/entreprises?city=cervieres&zipcode=05100&occupation=boucherie',
-            url
-        )
+            settings.PREFERRED_URL_SCHEME + '://' + settings.SERVER_NAME +
+            '/entreprises?city=cervieres&zipcode=05100&occupation=boucherie', url)
         self.assertEqual(200, response.status_code)
 
 
@@ -82,30 +79,17 @@ class EntreprisesLocationTest(AppTest):
         self.assertIsNone(location, named_location)
 
     def test_get_location_incorrect_coordinates(self):
-        with mock.patch('labonneboite.common.geocoding.get_address', return_value=[]):
-            location, named_location, departements = get_location({
-                'lat': 0,
-                'lon': 0
-            })
+        with mock.patch('labonneboite_common.geocoding.get_address', return_value=[]):
+            location, named_location, departements = get_location({'lat': 0, 'lon': 0})
         self.assertIsNotNone(location)
         self.assertEqual(0, location.latitude)
         self.assertEqual(0, location.longitude)
         self.assertIsNone(named_location)
 
     def test_get_location_invalid_coordinates_valid_name(self):
-        metz = {
-            'latitude': 45,
-            'longitude': 8,
-            'label': 'Metz',
-            'zipcode': '01000',
-            'city': 'Wurst City'
-        }
-        with mock.patch('labonneboite.common.geocoding.get_coordinates', return_value=[metz]):
-            location, named_location, departements = get_location({
-                'lat': '',
-                'lon': '',
-                'l': 'metz'
-            })
+        metz = {'latitude': 45, 'longitude': 8, 'label': 'Metz', 'zipcode': '01000', 'city': 'Wurst City'}
+        with mock.patch('labonneboite_common.geocoding.get_coordinates', return_value=[metz]):
+            location, named_location, departements = get_location({'lat': '', 'lon': '', 'l': 'metz'})
         self.assertIsNotNone(location)
         self.assertEqual(45, location.latitude)
         self.assertEqual(8, location.longitude)
@@ -120,11 +104,8 @@ class EntreprisesLocationTest(AppTest):
             'city_code': '19111',
             'zipcode': '666',
         }]
-        with mock.patch('labonneboite.common.geocoding.get_address', return_value=addresses):
-            location, named_location, departements = get_location({
-                'lat': -2,
-                'lon': -15
-            })
+        with mock.patch('labonneboite_common.geocoding.get_address', return_value=addresses):
+            location, named_location, departements = get_location({'lat': -2, 'lon': -15})
         self.assertIsNotNone(location)
         self.assertEqual(-2, location.latitude)
         self.assertEqual(-15, location.longitude)
@@ -134,7 +115,7 @@ class EntreprisesLocationTest(AppTest):
         self.assertEqual('Copacabana', named_location.name)
 
     def test_get_location_location_not_found(self):
-        with mock.patch('labonneboite.common.geocoding.get_coordinates', return_value=[]):
+        with mock.patch('labonneboite_common.geocoding.get_coordinates', return_value=[]):
             location, named_location, departements = get_location({
                 'l': 42,  # I swear, this happened in production
             })
@@ -258,10 +239,16 @@ class GenericUrlSearchRedirectionTest(AppTest):
 
     def test_get_url_for_rome_departments(self):
         with self.app_context():
-            with mock.patch('labonneboite.common.geocoding.datagouv.get_department_by_code', return_value={"department": "57", "label": 'Moselle (57)'}):
+            with mock.patch('labonneboite_common.geocoding.datagouv.get_department_by_code',
+                            return_value={
+                                "department": "57",
+                                "label": 'Moselle (57)'
+                            }):
                 url = get_url_for_rome('M1805', '57')
-                self.assertEqual(url, 'http://labonneboite.pole-emploi.fr/entreprises?departments=57&j=M1805&l=Moselle+%2857%29&occupation=etudes-et-developpement-informatique')
-            with mock.patch('labonneboite.common.geocoding.datagouv.get_department_by_code', return_value=None):
+                self.assertEqual(
+                    url,
+                    'http://labonneboite.pole-emploi.fr/entreprises?departments=57&j=M1805&l=Moselle+%2857%29&occupation=etudes-et-developpement-informatique'
+                )
+            with mock.patch('labonneboite_common.geocoding.datagouv.get_department_by_code', return_value=None):
                 url = get_url_for_rome('M1805', '57')
                 self.assertEqual(url, None)
-

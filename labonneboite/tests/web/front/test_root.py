@@ -1,8 +1,9 @@
 from unittest import mock
 
 from labonneboite.tests.test_base import DatabaseTest
-from labonneboite.common import pro
-from labonneboite.common.models import User
+from labonneboite_common import pro
+from labonneboite_common.models import User
+
 
 class RootTest(DatabaseTest):
 

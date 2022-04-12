@@ -5,11 +5,11 @@ from flask import abort, Blueprint, jsonify, make_response, render_template, req
 from slugify import slugify
 from sqlalchemy.orm.exc import NoResultFound
 
-from labonneboite.common import activity
-from labonneboite.common import pdf as pdf_util
-from labonneboite.common import util
-from labonneboite.common.contact_mode import CONTACT_MODE_STAGES
-from labonneboite.common.models import Office
+from labonneboite_common import activity
+from labonneboite_common import pdf as pdf_util
+from labonneboite_common import util
+from labonneboite_common.contact_mode import CONTACT_MODE_STAGES
+from labonneboite_common.models import Office
 from labonneboite.conf import settings
 from labonneboite.web import WEB_DIR
 from labonneboite.web.utils import fix_csrf_session

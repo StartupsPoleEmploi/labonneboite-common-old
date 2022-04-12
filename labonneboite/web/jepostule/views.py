@@ -6,9 +6,9 @@ from flask_login import current_user
 import requests
 
 from labonneboite.conf import settings
-from labonneboite.common import crypto
-from labonneboite.common.models.office import Office
-from labonneboite.common.refresh_peam_token import attempt_to_refresh_peam_token
+from labonneboite_common import crypto
+from labonneboite_common.models.office import Office
+from labonneboite_common.refresh_peam_token import attempt_to_refresh_peam_token
 
 from .utils import jepostule_enabled
 
@@ -25,7 +25,7 @@ def application(siret):
     refresh_token_result = attempt_to_refresh_peam_token()
     if refresh_token_result["token_has_expired"]:
         return redirect(refresh_token_result["redirect_url"])
-    
+
     data = {
         'candidate_first_name': current_user.first_name,
         'candidate_last_name': current_user.last_name,
@@ -54,27 +54,22 @@ def application(siret):
         iframe_base=settings.JEPOSTULE_BASE_URL,
     )
 
+
 def get_token(**params):
     params['client_secret'] = settings.JEPOSTULE_CLIENT_SECRET
     try:
-        response = requests.post(
-            settings.JEPOSTULE_BASE_URL + '/auth/application/token/',
-            data=params, timeout=20
-        )
+        response = requests.post(settings.JEPOSTULE_BASE_URL + '/auth/application/token/', data=params, timeout=20)
     except requests.ReadTimeout:
         raise JePostuleError('Request token timeout')
 
     if response.status_code >= 400:
-        raise JePostuleError('Request token error status={response.status_code} content="{response.content}"'.format(
-            response=response
-        ))
+        raise JePostuleError(
+            'Request token error status={response.status_code} content="{response.content}"'.format(response=response))
 
     try:
         data = response.json()
     except ValueError:
-        raise JePostuleError('Request token JSON parsing error content="{response.content}"'.format(
-            response=response
-        ))
+        raise JePostuleError('Request token JSON parsing error content="{response.content}"'.format(response=response))
 
     return data['token'], data['timestamp']
 

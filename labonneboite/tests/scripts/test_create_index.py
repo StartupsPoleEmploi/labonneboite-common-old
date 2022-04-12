@@ -4,16 +4,16 @@ from unittest import mock
 from flask import url_for
 from social_flask_sqlalchemy.models import UserSocialAuth
 
-from labonneboite.common import mapping as mapping_util
-from labonneboite.common.models import Office, OfficeAdminAdd, OfficeAdminRemove, OfficeAdminUpdate
-from labonneboite.common.models import OfficeAdminExtraGeoLocation, User
-from labonneboite.common.database import db_session
+from labonneboite_common import mapping as mapping_util
+from labonneboite_common.models import Office, OfficeAdminAdd, OfficeAdminRemove, OfficeAdminUpdate
+from labonneboite_common.models import OfficeAdminExtraGeoLocation, User
+from labonneboite_common.database import db_session
 from labonneboite.conf import settings
-from labonneboite.common import es
+from labonneboite_common import es
 from labonneboite.scripts import create_index as script
 from labonneboite.tests.test_base import DatabaseTest
 from labonneboite.web.auth.backends.peam import PEAMOpenIdConnect
-from labonneboite.common import scoring as scoring_util
+from labonneboite_common import scoring as scoring_util
 
 
 class CreateIndexBaseTest(DatabaseTest):
@@ -289,9 +289,10 @@ class UtilsTest(CreateIndexBaseTest):
                 'D1101': 50
             },
             'scores_alternance_by_rome': mock.ANY,
-            'locations': [
-                {'lat': 49.1044, 'lon': 6.17952},
-            ],
+            'locations': [{
+                'lat': 49.1044,
+                'lon': 6.17952
+            },],
             'siret': '78548035101646',
             'headcount': 12,
             'email': 'supermarche@match.com',

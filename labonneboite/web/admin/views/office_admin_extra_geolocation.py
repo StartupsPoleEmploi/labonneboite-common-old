@@ -4,8 +4,8 @@ from flask import flash
 from flask import Markup
 from flask_admin.contrib.sqla import ModelView
 
-from labonneboite.common import geocoding
-from labonneboite.common.models import OfficeAdminExtraGeoLocation
+from labonneboite_common import geocoding
+from labonneboite_common.models import OfficeAdminExtraGeoLocation
 from labonneboite.web.admin.forms import strip_filter
 from labonneboite.web.admin.utils import datetime_format, AdminModelViewMixin
 
@@ -50,7 +50,6 @@ class OfficeAdminExtraGeoLocationModelView(AdminModelViewMixin, ModelView):
         'geolocations': lambda view, context, model, name: Markup(model.geolocations_as_html_links()),
     }
 
-
     column_labels = {
         'siret': "Siret",
         'codes': "Départements / Codes communes (INSEE)",
@@ -94,12 +93,9 @@ class OfficeAdminExtraGeoLocationModelView(AdminModelViewMixin, ModelView):
         if is_valid and form.data.get('codes'):
             for code in OfficeAdminExtraGeoLocation.codes_as_list(form.data['codes']):
                 if not any([geocoding.is_departement(code), geocoding.is_commune_id(code)]):
-                    msg = (
-                        "`%s` n'est pas un code commune (INSEE) ou un numéro de département valide."
-                        "<br>"
-                        "Assurez-vous de ne saisir qu'un élément par ligne."
-                        % code
-                    )
+                    msg = ("`%s` n'est pas un code commune (INSEE) ou un numéro de département valide."
+                           "<br>"
+                           "Assurez-vous de ne saisir qu'un élément par ligne." % code)
                     flash(Markup(msg), 'error')
                     return False
 

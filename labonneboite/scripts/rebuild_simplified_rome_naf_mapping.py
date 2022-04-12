@@ -7,9 +7,9 @@ from slugify import slugify
 import numpy as np
 
 from labonneboite.conf import settings
-from labonneboite.common import mapping as mapping_util
-from labonneboite.common import hiring_type_util
-from labonneboite.common import geocoding
+from labonneboite_common import mapping as mapping_util
+from labonneboite_common import hiring_type_util
+from labonneboite_common import geocoding
 
 logging.basicConfig(level=logging.INFO)
 
@@ -37,14 +37,12 @@ class RomeNafMapping:
         self.sorted_nafs_for_rome = {}
         for rome in self.df.rome_id.unique():
             self.sorted_nafs_for_rome[rome] = self.df[self.df.rome_id == rome].sort_values(
-                by='hirings', ascending=False
-            ).naf_id.tolist()
+                by='hirings', ascending=False).naf_id.tolist()
 
         self.sorted_romes_for_naf = {}
         for naf in self.df.naf_id.unique():
             self.sorted_romes_for_naf[naf] = self.df[self.df.naf_id == naf].sort_values(
-                by='hirings', ascending=False
-            ).rome_id.tolist()
+                by='hirings', ascending=False).rome_id.tolist()
 
     def get_romes(self):
         return self.sorted_nafs_for_rome.keys()
@@ -158,8 +156,7 @@ class RomeNafMapping:
         romes_per_naf = [len(romes) for romes in self.sorted_romes_for_naf.values()]
         max_romes_per_naf = max(romes_per_naf)
         max_romes_per_naf_champions = [
-            naf for naf in self.get_nafs()
-            if len(self.sorted_romes_for_naf[naf]) == max_romes_per_naf
+            naf for naf in self.get_nafs() if len(self.sorted_romes_for_naf[naf]) == max_romes_per_naf
         ]
         logging.info("Actual maximum of romes per naf : {} achieved by nafs {}".format(
             max_romes_per_naf,
@@ -172,8 +169,7 @@ class RomeNafMapping:
         nafs_per_rome = [len(nafs) for nafs in self.sorted_nafs_for_rome.values()]
         max_nafs_per_rome = max(nafs_per_rome)
         max_nafs_per_rome_champions = [
-            rome for rome in self.get_romes()
-            if len(self.sorted_nafs_for_rome[rome]) == max_nafs_per_rome
+            rome for rome in self.get_romes() if len(self.sorted_nafs_for_rome[rome]) == max_nafs_per_rome
         ]
         logging.info("Actual maximum of nafs per rome : {} achieved by romes {}".format(
             max_nafs_per_rome,
@@ -182,7 +178,6 @@ class RomeNafMapping:
         if SHOW_DETAILED_STATS:
             logging.info("Nafs per rome : {}".format(nafs_per_rome))
         logging.info("90% of romes have {} nafs or less.".format(round(np.percentile(nafs_per_rome, 90), 1)))
-
 
     def export_to_file(self):
         self.df.to_csv(OUTPUT_FILENAME, sep=CSV_DELIMITER, index=False, encoding='utf-8')

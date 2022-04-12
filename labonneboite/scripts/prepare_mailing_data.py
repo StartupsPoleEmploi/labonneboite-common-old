@@ -6,10 +6,10 @@ import pandas as pd
 from slugify import slugify
 
 from labonneboite.conf import settings
-from labonneboite.common import mapping as mapping_util
-from labonneboite.common import hiring_type_util
-from labonneboite.common import geocoding
-from labonneboite.common.search import HiddenMarketFetcher
+from labonneboite_common import mapping as mapping_util
+from labonneboite_common import hiring_type_util
+from labonneboite_common import geocoding
+from labonneboite_common.search import HiddenMarketFetcher
 
 logging.basicConfig(level=logging.INFO)
 
@@ -44,15 +44,16 @@ if IS_THIS_MAILING_WORK_IN_PROGRESS:
     GA_TRACKING_MEDIUM = "%s_wip" % GA_TRACKING_MEDIUM
     GA_TRACKING_SOURCE = "%s_wip" % GA_TRACKING_SOURCE
 
-GA_TRACKING_SEARCH = 'utm_medium=%s&utm_source=%s&utm_campaign=%s_search' % (
-    GA_TRACKING_MEDIUM, GA_TRACKING_SOURCE, GA_TRACKING_SOURCE)
-GA_TRACKING_DETAIL = 'utm_medium=%s&utm_source=%s&utm_campaign=%s_detail' % (
-    GA_TRACKING_MEDIUM, GA_TRACKING_SOURCE, GA_TRACKING_SOURCE)
+GA_TRACKING_SEARCH = 'utm_medium=%s&utm_source=%s&utm_campaign=%s_search' % (GA_TRACKING_MEDIUM, GA_TRACKING_SOURCE,
+                                                                             GA_TRACKING_SOURCE)
+GA_TRACKING_DETAIL = 'utm_medium=%s&utm_source=%s&utm_campaign=%s_detail' % (GA_TRACKING_MEDIUM, GA_TRACKING_SOURCE,
+                                                                             GA_TRACKING_SOURCE)
 
 SEND_ALL_EMAILS_TO_DEBUG_EMAIL = IS_THIS_MAILING_WORK_IN_PROGRESS
 
 ENABLE_FAKE_METZ_INSEE_CODE_FOR_ALL = False  # sometimes convenient while working on local dev
 METZ_INSEE_CODE = '57463'
+
 
 def get_results(commune_id, rome_1_id, rome_2_id):
     """
@@ -167,9 +168,7 @@ def compute_additional_data(commune_id, rome_1_id, rome_2_id):
             # names of these columns are in COLUMNS_FOR_EACH_OFFICE
             values += [office.siret, office.name, office.city_code, office_url]
 
-    list_text = ''.join(
-        ["<li><a href='%s'>%s</a></li>" % (url_from_siret(o.siret), o.name) for o in offices]
-    )
+    list_text = ''.join(["<li><a href='%s'>%s</a></li>" % (url_from_siret(o.siret), o.name) for o in offices])
 
     # For the record GMS does not directly support utf8 characters with accent (e.g. 'é').
     # It also does not support html encoding (e.g. '&eacute;') as it breaks at the `;`.
@@ -194,7 +193,8 @@ def prepare_mailing_data():
     # inspired by
     # https://stackoverflow.com/questions/16236684/apply-pandas-function-to-column-to-create-multiple-new-columns
     # and https://stackoverflow.com/questions/13331698/how-to-apply-a-function-to-two-columns-of-pandas-dataframe
-    temp = list(zip(*df[[COMMUNE_COLUMN, ROME_1_COLUMN, ROME_2_COLUMN]].apply(lambda x: compute_additional_data(*x), axis=1)))
+    temp = list(
+        zip(*df[[COMMUNE_COLUMN, ROME_1_COLUMN, ROME_2_COLUMN]].apply(lambda x: compute_additional_data(*x), axis=1)))
     for index, column in enumerate(ADDITIONAL_COLUMNS):
         df[column] = temp[index]
 
@@ -218,7 +218,7 @@ def prepare_mailing_data():
 
     # index=False avoids writing leading index column
     # encoding='ascii' is the default, see
-    # https://stackoverflow.com/questions/31331358/unicode-encode-error-when-writing-pandas-df-to-csv 
+    # https://stackoverflow.com/questions/31331358/unicode-encode-error-when-writing-pandas-df-to-csv
     df.to_csv(OUTPUT_FILENAME, sep=',', index=False, encoding='utf-8')
 
     logging.info("please consult result in file %s", OUTPUT_FILENAME)

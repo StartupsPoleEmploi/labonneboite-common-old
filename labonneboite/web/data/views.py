@@ -4,11 +4,10 @@ This blueprint provides ways to easily explore the internal ROME/NAF mapping.
 from flask import Blueprint
 from flask import redirect, render_template, request, url_for
 
-from labonneboite.common import mapping as mapping_util
-from labonneboite.common.models import Office
+from labonneboite_common import mapping as mapping_util
+from labonneboite_common.models import Office
 from labonneboite.conf import settings
 from labonneboite.web.data.forms import NafForm, RomeForm, SiretForm, EmailForm
-
 
 dataBlueprint = Blueprint('data', __name__)
 
@@ -124,7 +123,6 @@ def sirets_for_email():
 
             sirets = ','.join([office.siret for office in offices])
             save_link = url_for('officeadminupdate.create_view', _external=True, sirets=sirets)
-
 
     context = {
         'current_tab': 'sirets_for_email',

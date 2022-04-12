@@ -1,4 +1,3 @@
-
 """
 Load testing API+Frontend using Locust framework.
 
@@ -38,11 +37,10 @@ import urllib.request, urllib.parse, urllib.error
 from locust import HttpLocust, TaskSet, task
 from slugify import slugify
 
-from labonneboite.common import geocoding
+from labonneboite_common import geocoding
 from labonneboite.conf import settings
 from labonneboite.importer import util as import_util
 from labonneboite.web.api import util
-
 
 logger = logging.getLogger(__name__)
 logger.info("loading locustfile")
@@ -64,19 +62,13 @@ def generate_city_choices():
     cities_by_population = sorted(geocoding.get_cities(), key=itemgetter('population'), reverse=True)
     city_choices = []
     for city in cities_by_population[:2000]:
-        city_choices.append(
-            [
-                (city['name'], city['zipcode']), math.log10(city['population'])
-            ]
-        )
+        city_choices.append([(city['name'], city['zipcode']), math.log10(city['population'])])
     return city_choices
 
 
 CITY_CHOICES = generate_city_choices()
 
-
 COMMUNE_CHOICES = [city_['commune_id'] for city_ in geocoding.get_cities()]
-
 
 SIRET_CHOICES = generate_siret_choices()
 

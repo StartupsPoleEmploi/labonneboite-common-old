@@ -1,8 +1,8 @@
 import datetime
 
 from labonneboite.conf import settings
-from labonneboite.common.database import db_session
-from labonneboite.common.models import Office, OfficeResult, OfficeAdminExtraGeoLocation
+from labonneboite_common.database import db_session
+from labonneboite_common.models import Office, OfficeResult, OfficeAdminExtraGeoLocation
 from labonneboite.tests.test_base import DatabaseTest
 
 
@@ -27,10 +27,8 @@ class OfficeAdminExtraGeoLocationTest(DatabaseTest):
         # Multiple newlines should have been removed.
         self.assertEqual(extra_geolocation.codes, '57616\n75110')
         # Corresponding Lat/Lon coords should have been found and stored.
-        self.assertEqual(
-            extra_geolocation.geolocations,
-            '[[49.135208952059884, 6.207906756168173], [48.8815994262695, 2.36229991912841]]'
-        )
+        self.assertEqual(extra_geolocation.geolocations,
+                         '[[49.135208952059884, 6.207906756168173], [48.8815994262695, 2.36229991912841]]')
 
     def test_is_outdated(self):
         """

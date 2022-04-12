@@ -22,7 +22,7 @@ import os
 import time
 import argparse
 from sqlalchemy import text
-from labonneboite.common.database import db_session, engine
+from labonneboite_common.database import db_session, engine
 
 parser = argparse.ArgumentParser(description='Manage third party updates')
 parser.add_argument('command', metavar='command', type=str, help='insert, delete or count')
@@ -36,6 +36,7 @@ REASON_KEY = args.key or 'cbs_xp'
 command = args.command
 file = args.path or 'labonneboite/common/data/cbs_data_test.csv'
 
+
 def cbs_count_records():
     sql = text("""
         SELECT COUNT(*) FROM labonneboite.etablissements_third_party_update where reason='%s';
@@ -45,6 +46,7 @@ def cbs_count_records():
         print('> CBS records count: ', res.first()[0])
     except Exception as err:
         print('> error executing request', err)
+
 
 def cbs_delete_records():
     try:
@@ -58,6 +60,7 @@ def cbs_delete_records():
     except Exception as err:
         print('> error executing request', err)
 
+
 def cbs_insert_records():
     try:
         print('> Inserting CBS records...', file)
@@ -70,26 +73,30 @@ def cbs_insert_records():
     except Exception as err:
         print('> error executing request', err, '\n> Did you forget to set the env var `ENABLE_DB_INFILE=1`?')
 
+
 def main():
-    print('\nStarting script with LBB_ENV:', os.environ.get('LBB_ENV', None), 'and command:', command, 'and key:', REASON_KEY, '\n')
+    print('\nStarting script with LBB_ENV:', os.environ.get('LBB_ENV', None), 'and command:', command, 'and key:',
+          REASON_KEY, '\n')
 
-    if(command == 'count'): cbs_count_records()
+    if (command == 'count'):
+        cbs_count_records()
 
-    elif(command == 'delete'):
+    elif (command == 'delete'):
         cbs_count_records()
         cbs_delete_records()
         cbs_count_records()
 
-    elif(command == 'insert'):
+    elif (command == 'insert'):
         cbs_count_records()
         cbs_insert_records()
         cbs_count_records()
 
-    else: print('Unknown command', command)
+    else:
+        print('Unknown command', command)
+
 
 if __name__ == "__main__":
     start_time = time.time()
     main()
     engine.dispose()
     print("--- %s seconds ---" % (time.time() - start_time))
-

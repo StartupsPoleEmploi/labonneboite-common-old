@@ -13,12 +13,12 @@ from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 import os
 
-from labonneboite.common import departements as dpt
+from labonneboite_common import departements as dpt
 from labonneboite.importer import settings
 from labonneboite.importer import compute_score
 from labonneboite.importer import util as import_util
 from labonneboite.importer.util import history_importer_job_decorator
-from labonneboite.common.util import timeit
+from labonneboite_common.util import timeit
 from labonneboite.importer.jobs.base import Job
 from labonneboite.importer.jobs.common import logger
 
@@ -107,7 +107,7 @@ class ScoreComputingJob(Job):
 
             if at_least_one_departement_failed:
                 raise Exception('At least one departement failed. See above for details.')
-                    
+
         for departement, compute_result in compute_results.items():
             if not compute_result:
                 logger.info("departement with error : %s", departement)
@@ -115,6 +115,7 @@ class ScoreComputingJob(Job):
 
         logger.info("compute_scores FINISHED")
         return results
+
 
 @history_importer_job_decorator(os.path.basename(__file__))
 @timeit

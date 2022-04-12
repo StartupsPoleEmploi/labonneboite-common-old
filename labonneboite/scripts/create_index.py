@@ -15,19 +15,19 @@ from pyprof2calltree import convert
 from sqlalchemy import and_, asc, inspect, or_
 from sqlalchemy.exc import OperationalError
 
-from labonneboite.common import departements as dpt
-from labonneboite.common import encoding as encoding_util
-from labonneboite.common import es, geocoding, hiring_type_util
-from labonneboite.common import mapping as mapping_util
-from labonneboite.common import pdf as pdf_util
-from labonneboite.common import scoring as scoring_util
-from labonneboite.common.chunks import chunks
-from labonneboite.common.database import db_session
-from labonneboite.common.load_data import load_ogr_labels, load_siret_to_remove, OGR_ROME_CODES
-from labonneboite.common.models import HistoryBlacklist, Office, OfficeAdminAdd, OfficeAdminExtraGeoLocation, \
+from labonneboite_common import departements as dpt
+from labonneboite_common import encoding as encoding_util
+from labonneboite_common import es, geocoding, hiring_type_util
+from labonneboite_common import mapping as mapping_util
+from labonneboite_common import pdf as pdf_util
+from labonneboite_common import scoring as scoring_util
+from labonneboite_common.chunks import chunks
+from labonneboite_common.database import db_session
+from labonneboite_common.load_data import load_ogr_labels, load_siret_to_remove, OGR_ROME_CODES
+from labonneboite_common.models import HistoryBlacklist, Office, OfficeAdminAdd, OfficeAdminExtraGeoLocation, \
     OfficeAdminRemove, OfficeAdminUpdate, OfficeThirdPartyUpdate
-from labonneboite.common.search import HiddenMarketFetcher
-from labonneboite.common.util import timeit
+from labonneboite_common.search import HiddenMarketFetcher
+from labonneboite_common.util import timeit
 from labonneboite.conf import settings
 from labonneboite.importer import settings as importer_settings
 from labonneboite.importer import util as importer_util

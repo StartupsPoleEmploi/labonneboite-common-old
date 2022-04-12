@@ -5,7 +5,7 @@ from shutil import copyfile
 
 from labonneboite.importer import util as import_util
 from labonneboite.importer.util import history_importer_job_decorator
-from labonneboite.common.util import timeit
+from labonneboite_common.util import timeit
 from labonneboite.importer import settings
 from labonneboite.importer.jobs.common import logger
 
@@ -34,7 +34,6 @@ def populate_flag(flag):
     logger.info("completed populating %s ... ", flag)
     cur.close()
     con.close()
-
 
 
 @timeit
@@ -110,9 +109,11 @@ def dump():
     timestamp = datetime.now().strftime('%Y_%m_%d_%H%M')
 
     logger.info("backing up table %s ...", settings.SCORE_REDUCING_TARGET_TABLE)
-    etab_result = import_util.back_up(
-        settings.BACKUP_OUTPUT_FOLDER, settings.SCORE_REDUCING_TARGET_TABLE,
-        "export_etablissement", timestamp, new_table_name="etablissements_new")
+    etab_result = import_util.back_up(settings.BACKUP_OUTPUT_FOLDER,
+                                      settings.SCORE_REDUCING_TARGET_TABLE,
+                                      "export_etablissement",
+                                      timestamp,
+                                      new_table_name="etablissements_new")
 
     tar_filename = os.path.join(settings.BACKUP_FOLDER, "%s.tar.bz2" % timestamp)
     with tarfile.open(tar_filename, "w:bz2") as tar:
@@ -129,7 +130,7 @@ def make_link_file_to_new_archive(archive_path):
         os.remove(link_path)
     except OSError:
         pass  # link_path did not already exist
-    
+
     try:
         # this is a hard link, not a symlink
         # hard linking fails on Vagrant, error seems to be known:
@@ -138,6 +139,7 @@ def make_link_file_to_new_archive(archive_path):
     except OSError:
         copyfile(archive_path, link_path)
 
+
 @history_importer_job_decorator(os.path.basename(__file__))
 def run_main():
     prepare_flags_junior_and_senior()
@@ -145,7 +147,6 @@ def run_main():
     populate_flags()
     filename = dump()
     make_link_file_to_new_archive(filename)
-
 
 
 if __name__ == "__main__":

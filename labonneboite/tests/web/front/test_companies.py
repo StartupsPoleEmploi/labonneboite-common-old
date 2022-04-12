@@ -1,9 +1,9 @@
 import unittest.mock
 
-from labonneboite.common.models import Office
-from labonneboite.common import pdf
+from labonneboite_common.models import Office
+from labonneboite_common import pdf
 from labonneboite.tests.test_base import DatabaseTest
-from labonneboite.common.load_data import load_groupements_employeurs
+from labonneboite_common.load_data import load_groupements_employeurs
 
 
 class DownloadTest(DatabaseTest):
@@ -109,7 +109,7 @@ class DownloadTest(DatabaseTest):
         self.assertLess(1000, rv.content_length)
 
     def test_download_triggers_activity_log(self):
-        with unittest.mock.patch('labonneboite.common.activity.log') as activity_log:
+        with unittest.mock.patch('labonneboite_common.activity.log') as activity_log:
             self.app.get(self.url_for('office.download', siret=self.office.siret))
             activity_log.assert_called_with('telecharger-pdf', siret=self.office.siret)
 
@@ -132,7 +132,7 @@ class DownloadTest(DatabaseTest):
         self.assertEqual(rv.status_code, 200)
 
     def test_toggle_details_event(self):
-        with unittest.mock.patch('labonneboite.common.activity.log') as activity_log:
+        with unittest.mock.patch('labonneboite_common.activity.log') as activity_log:
             rv = self.app.post(self.url_for('office.toggle_details_event', siret=self.office.siret))
             activity_log.assert_called_with('afficher-details', siret=self.office.siret)
         self.assertEqual(rv.status_code, 200)

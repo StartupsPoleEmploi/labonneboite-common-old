@@ -3,7 +3,7 @@ from flask import Markup
 from flask_admin.contrib.sqla import ModelView
 from wtforms import validators
 
-from labonneboite.common.models import OfficeAdminAdd, OfficeAdminRemove
+from labonneboite_common.models import OfficeAdminAdd, OfficeAdminRemove
 from labonneboite.web.admin.forms import nospace_filter, phone_validator, strip_filter, siret_validator
 from labonneboite.web.admin.utils import datetime_format, AdminModelViewMixin, SelectForChoiceTypeField
 
@@ -153,11 +153,9 @@ class OfficeAdminRemoveModelView(AdminModelViewMixin, ModelView):
                 # the delete button is missing on the edit and/or detail view.
                 # https://github.com/flask-admin/flask-admin/issues/1327
                 office_to_add_url = url_for('officeadminadd.index_view', search=office_to_add.siret)
-                msg = (
-                    "Vous ne pouvez pas supprimer cette entreprise car elle existe déjà dans la liste "
-                    "<b>Ajouter une entreprise</b>.<br>Vous devez d'abord "
-                    '<a target="_blank" href="{url}">la supprimer de cette liste</a>.'.format(url=office_to_add_url)
-                )
+                msg = ("Vous ne pouvez pas supprimer cette entreprise car elle existe déjà dans la liste "
+                       "<b>Ajouter une entreprise</b>.<br>Vous devez d'abord "
+                       '<a target="_blank" href="{url}">la supprimer de cette liste</a>.'.format(url=office_to_add_url))
                 flash(Markup(msg), 'error')
                 return False
         return is_valid

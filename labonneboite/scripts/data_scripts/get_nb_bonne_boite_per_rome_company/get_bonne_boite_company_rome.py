@@ -2,11 +2,11 @@ import datetime
 import pandas as pd
 
 from labonneboite.importer import util as import_util
-from labonneboite.common import scoring as scoring_util
-from labonneboite.common import mapping as mapping_util
+from labonneboite_common import scoring as scoring_util
+from labonneboite_common import mapping as mapping_util
 from labonneboite.importer import settings as importer_settings
 from labonneboite.importer.jobs.common import logger
-from labonneboite.common.env import get_current_env, ENV_DEVELOPMENT
+from labonneboite_common.env import get_current_env, ENV_DEVELOPMENT
 
 
 def get_total_hirings_per_office():
@@ -39,6 +39,7 @@ def get_total_hirings_per_office():
     print(df_total_hirings)
     return df_total_hirings
 
+
 # function found on gist.github : https://gist.github.com/jlln/338b4b0b55bd6984f883
 
 
@@ -49,15 +50,16 @@ def splitDataFrameList(df, target_column, separator):
     returns: a dataframe with each entry for the target column separated, with each element moved into a new row.
     The values in the other columns are duplicated across the newly divided rows.
     '''
+
     def splitListToRows(row, row_accumulator, target_column, separator):
         split_row = row[target_column].split(separator)
         for s in split_row:
             new_row = row.to_dict()
             new_row[target_column] = s
             row_accumulator.append(new_row)
+
     new_rows = []
-    df.apply(splitListToRows, axis=1, args=(
-        new_rows, target_column, separator))
+    df.apply(splitListToRows, axis=1, args=(new_rows, target_column, separator))
     new_df = pd.DataFrame(new_rows)
     return new_df
 
@@ -81,27 +83,28 @@ def get_romes(row):
 
 
 def get_true_score(row):
-    return scoring_util.get_score_adjusted_to_rome_code_and_naf_code(
-        score=row['total_score'],
-        rome_code=row['rome'],
-        naf_code=row['codenaf'])
+    return scoring_util.get_score_adjusted_to_rome_code_and_naf_code(score=row['total_score'],
+                                                                     rome_code=row['rome'],
+                                                                     naf_code=row['codenaf'])
 
 
 def get_true_score_alt(row):
-    return scoring_util.get_score_adjusted_to_rome_code_and_naf_code(
-        score=row['total_score_alt'],
-        rome_code=row['rome'],
-        naf_code=row['codenaf'])
+    return scoring_util.get_score_adjusted_to_rome_code_and_naf_code(score=row['total_score_alt'],
+                                                                     rome_code=row['rome'],
+                                                                     naf_code=row['codenaf'])
 
 
 def get_true_hirings(row):
     return scoring_util.get_hirings_from_score(row['score'])
 
+
 def get_true_hirings_alt(row):
     return scoring_util.get_hirings_from_score(row['score_alt'])
 
+
 def is_a_bonne_boite(row):
     return row['score'] >= row['seuil']
+
 
 def is_a_bonne_alternance(row):
     return row['score_alt'] >= row['seuil_alt']
@@ -124,29 +127,23 @@ def get_offices_are_bonne_boite(df_total_hirings):
     logger.info("We compute the true score for each row")
 
     df_total_hirings['nb_recrutements_predits'] = df_total_hirings.apply(lambda row: get_true_hirings(row), axis=1)
-    df_total_hirings['nb_recrutements_predits_alt'] = df_total_hirings.apply(lambda row: get_true_hirings_alt(row), axis=1)
+    df_total_hirings['nb_recrutements_predits_alt'] = df_total_hirings.apply(lambda row: get_true_hirings_alt(row),
+                                                                             axis=1)
     logger.info("We compute the true hirings for each row")
 
-    cols_of_interest = ['siret',
-                        'raisonsociale',
-                        'enseigne',
-                        'email',
-                        'tel',
-                        'website',
-                        'codenaf',
-                        'rome',
-                        'codepostal',
-                        'codecommune',
-                        'trancheeffectif',
-                        'nb_recrutements_predits',
-                        'score',
-                        'score_alt']
+    cols_of_interest = [
+        'siret', 'raisonsociale', 'enseigne', 'email', 'tel', 'website', 'codenaf', 'rome', 'codepostal', 'codecommune',
+        'trancheeffectif', 'nb_recrutements_predits', 'score', 'score_alt'
+    ]
 
     df_total_hirings = df_total_hirings[cols_of_interest]
 
     df_total_hirings['seuil'] = df_total_hirings['rome'].apply(lambda x: scoring_util.get_score_minimum_for_rome(x))
-    df_total_hirings['seuil_alt'] = df_total_hirings['rome'].apply(lambda x: scoring_util.get_score_minimum_for_rome(x, alternance=True))
-    logger.info("We compute the threshold, related to the score column. If a score is >= to this threshold, it's considered as a office")
+    df_total_hirings['seuil_alt'] = df_total_hirings['rome'].apply(
+        lambda x: scoring_util.get_score_minimum_for_rome(x, alternance=True))
+    logger.info(
+        "We compute the threshold, related to the score column. If a score is >= to this threshold, it's considered as a office"
+    )
 
     df_total_hirings['is a bonne boite ?'] = df_total_hirings.apply(lambda row: is_a_bonne_boite(row), axis=1)
     df_total_hirings['is a bonne alternance ?'] = df_total_hirings.apply(lambda row: is_a_bonne_alternance(row), axis=1)

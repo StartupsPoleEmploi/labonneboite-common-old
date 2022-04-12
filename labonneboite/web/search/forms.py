@@ -5,9 +5,9 @@ from wtforms.validators import DataRequired, Optional, NumberRange, Regexp
 from wtforms.widgets import HiddenInput
 
 from labonneboite.conf import settings
-from labonneboite.common import pro
-from labonneboite.common import sorting
-from labonneboite.common.search import AudienceFilter
+from labonneboite_common import pro
+from labonneboite_common import sorting
+from labonneboite_common.search import AudienceFilter
 
 
 class CompanySearchForm(FlaskForm):

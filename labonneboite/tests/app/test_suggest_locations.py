@@ -1,4 +1,4 @@
-from labonneboite.common import autocomplete
+from labonneboite_common import autocomplete
 from labonneboite.conf import settings
 from labonneboite.scripts import create_index
 from labonneboite.tests.test_base import DatabaseTest

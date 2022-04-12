@@ -14,17 +14,17 @@ from flask_login import current_user
 from flask_wtf import csrf
 from social_flask_sqlalchemy.models import UserSocialAuth
 
-from labonneboite.common import activity, csv
-from labonneboite.common.database import db_session
-from labonneboite.common.models import get_user_social_auth
-from labonneboite.common.models import Office
-from labonneboite.common.models import User
-from labonneboite.common.models import UserFavoriteOffice
-from labonneboite.common import pdf as pdf_util
-from labonneboite.common import pro
-from labonneboite.common import util
+from labonneboite_common import activity, csv
+from labonneboite_common.database import db_session
+from labonneboite_common.models import get_user_social_auth
+from labonneboite_common.models import Office
+from labonneboite_common.models import User
+from labonneboite_common.models import UserFavoriteOffice
+from labonneboite_common import pdf as pdf_util
+from labonneboite_common import pro
+from labonneboite_common import util
 from labonneboite.web.auth.views import logout
-from labonneboite.common.pagination import Pagination, FAVORITES_PER_PAGE
+from labonneboite_common.pagination import Pagination, FAVORITES_PER_PAGE
 from labonneboite.web.user.forms import UserAccountDeleteForm
 from labonneboite.web.utils import fix_csrf_session
 from labonneboite.web import WEB_DIR
@@ -43,8 +43,7 @@ def account():
     context = {}
     if user_social_auth:
         context['token'] = user_social_auth.extra_data['access_token']
-        context['token_age_in_seconds'] = int(
-            time.time()) - user_social_auth.extra_data['auth_time'],
+        context['token_age_in_seconds'] = int(time.time()) - user_social_auth.extra_data['auth_time'],
     return render_template('user/account.html', **context)
 
 
@@ -66,8 +65,7 @@ def account_delete():
         # We have to delete it because it has a foreign key to the User table.
         # We don't need to deal with the other tables of Social Auth, see:
         # https://python-social-auth.readthedocs.io/en/latest/storage.html
-        db_session.query(UserSocialAuth).filter_by(
-            user_id=current_user.id).delete()
+        db_session.query(UserSocialAuth).filter_by(user_id=current_user.id).delete()
 
         # Delete the current user.
         # The user's favorites will be deleted at the same time because of the `ondelete='CASCADE'`
@@ -125,8 +123,7 @@ def favorites_list_as_csv():
 @userBlueprint.route('/favorites/list/download/pdf')
 @flask_login.login_required
 def favorites_list_as_pdf():
-    favorites = UserFavoriteOffice.query.filter(
-        UserFavoriteOffice.user_id == current_user.id)
+    favorites = UserFavoriteOffice.query.filter(UserFavoriteOffice.user_id == current_user.id)
     # TODO this is probably wildly inefficient. Can we do this in just one query?
     companies = [favorite.office for favorite in favorites]
     pdf_file = pdf_util.render_favorites(companies, WEB_DIR)
@@ -141,8 +138,7 @@ def make_csv_response(csv_text, attachment_name):
     # Return csv file
     response = make_response(csv_text)
     response.headers['Content-Type'] = 'application/csv'
-    response.headers[
-        'Content-Disposition'] = 'attachment; filename=%s' % attachment_name
+    response.headers['Content-Disposition'] = 'attachment; filename=%s' % attachment_name
     return response
 
 
@@ -158,8 +154,7 @@ def favorites_list():
     except (TypeError, ValueError):
         page = 1
 
-    favorites = UserFavoriteOffice.query.filter(
-        UserFavoriteOffice.user_id == current_user.id)
+    favorites = UserFavoriteOffice.query.filter(UserFavoriteOffice.user_id == current_user.id)
     limit = FAVORITES_PER_PAGE
     pagination = Pagination(page, limit, favorites.count())
     if page > 1:
@@ -192,12 +187,9 @@ def favorites_add(siret: str, rome_code: Optional[str] = None):
     if not office:
         abort(404)
 
-    UserFavoriteOffice.add_favorite(user=current_user,
-                                    office=office,
-                                    rome_code=rome_code)
+    UserFavoriteOffice.add_favorite(user=current_user, office=office, rome_code=rome_code)
 
-    message = '"%s - %s" a été ajouté à vos favoris !' % (office.name,
-                                                          office.city)
+    message = '"%s - %s" a été ajouté à vos favoris !' % (office.name, office.city)
     flash(Markup(message), 'success')
     activity.log('ajout-favori', siret=siret)
 
@@ -229,15 +221,13 @@ def favorites_delete(siret):
     if current_app.config['WTF_CSRF_ENABLED']:
         csrf.validate_csrf(request.form.get('csrf_token'))
 
-    fav = UserFavoriteOffice.query.filter_by(office_siret=siret,
-                                             user_id=current_user.id).first()
+    fav = UserFavoriteOffice.query.filter_by(office_siret=siret, user_id=current_user.id).first()
     if not fav:
         abort(404)
 
     fav.delete()
 
-    message = '"%s - %s" a été supprimé de vos favoris !' % (fav.office.name,
-                                                             fav.office.city)
+    message = '"%s - %s" a été supprimé de vos favoris !' % (fav.office.name, fav.office.city)
     flash(message, 'success')
     activity.log('suppression-favori', siret=siret)
 

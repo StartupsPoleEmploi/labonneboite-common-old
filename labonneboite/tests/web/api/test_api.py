@@ -5,13 +5,13 @@ from unittest import mock
 
 from flask import url_for
 
-from labonneboite.common import autocomplete, es, hiring_type_util
-from labonneboite.common import mapping as mapping_util
-from labonneboite.common import pagination
-from labonneboite.common import scoring as scoring_util
-from labonneboite.common import sorting
-from labonneboite.common.models import Office
-from labonneboite.common.search import HiddenMarketFetcher
+from labonneboite_common import autocomplete, es, hiring_type_util
+from labonneboite_common import mapping as mapping_util
+from labonneboite_common import pagination
+from labonneboite_common import scoring as scoring_util
+from labonneboite_common import sorting
+from labonneboite_common.models import Office
+from labonneboite_common.search import HiddenMarketFetcher
 from labonneboite.conf import settings
 from labonneboite.tests.web.api.test_api_base import ApiBaseTest
 
@@ -1620,7 +1620,7 @@ class ApiOffersOfficesListTest(ApiBaseTest):
                 'distance': 50,
             })
 
-            with mock.patch('labonneboite.common.esd.get_response',
+            with mock.patch('labonneboite_common.esd.get_response',
                             return_value=self.get_fixture('esd-offres-happypath.json')) as mock_response:
                 rv = self.app.get(url_for("api.offers_offices_list", **params))
                 mock_response.assert_called_once()
@@ -1650,7 +1650,7 @@ class ApiOffersOfficesListTest(ApiBaseTest):
                 'distance': 50,
             })
 
-            with mock.patch('labonneboite.common.esd.get_response',
+            with mock.patch('labonneboite_common.esd.get_response',
                             return_value=self.get_fixture('esd-offres-happypath.json')) as mock_response:
                 rv = self.app.get(url_for("api.offers_offices_list", **params))
                 # romes are batched by 3 - 3 romes is 1 batch
@@ -1675,7 +1675,7 @@ class ApiOffersOfficesListTest(ApiBaseTest):
                 'distance': 50,
             })
 
-            with mock.patch('labonneboite.common.esd.get_response',
+            with mock.patch('labonneboite_common.esd.get_response',
                             return_value=self.get_fixture('esd-offres-happypath.json')) as mock_response:
                 rv = self.app.get(url_for("api.offers_offices_list", **params))
                 # romes are batched by 3 - 4 romes is 2 batches
