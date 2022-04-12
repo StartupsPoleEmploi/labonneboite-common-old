@@ -1,3 +1,0 @@
-# This is the file served in staging and dev environments (see labonneboite/web/root/views.py)
-User-agent: *
-Disallow: /
