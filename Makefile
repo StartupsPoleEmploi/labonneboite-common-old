@@ -7,6 +7,8 @@ DB_USER = root
 DB_NAME = labonneboite
 MYSQL = mysql -u ${DB_USER} --host ${DB_HOST} --port ${DB_PORT}
 
+PIP_COMPILE_ARGS ?=
+
 init: init-venv init-databases init-test-data
 
 init-databases: init-services data create-index
@@ -33,7 +35,7 @@ requirements.dev.txt: requirements.txt
 
 .SUFFIXES: .in .txt
 .in.txt:
-	pip-compile -o $@ -v $<
+	pip-compile ${PIP_COMPILE_ARGS} -o $@ -v $<
 
 # Services and data
 # -----------------

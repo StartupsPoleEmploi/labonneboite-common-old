@@ -1,0 +1,12 @@
+-r requirements.txt
+
+# dev tools
+flake8
+flake8-pylint
+coverage
+isort
+flake8-mypy
+mypy
+yapf
+pytest
+pytest-env

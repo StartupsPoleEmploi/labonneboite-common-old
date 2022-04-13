@@ -1,0 +1,31 @@
+
+Flask<0.13
+werkzeug
+alembic>=1.5.1
+Flask-BabelEx
+
+# # Databases and migrations.
+SQLAlchemy-Utils
+SQLAlchemy
+
+elasticsearch<2.0.0
+
+# # Users and auth management.
+Flask-Login
+social-auth-app-flask-sqlalchemy
+social-auth-app-flask
+social-auth-core[openidconnect]
+
+# # Data and Importer.
+pandas
+
+# # PDF utils and dependencies.
+xhtml2pdf
+
+# # Utils.
+python-slugify
+unidecode
+requests
+mailjet_rest
+cryptography
+astroid
